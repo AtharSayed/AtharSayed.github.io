@@ -254,6 +254,28 @@ section h2 span::after {
     color: var(--text-light);
 }
 
+.education-details {
+    margin: 2rem 0;
+}
+
+.education-item {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(78, 84, 200, 0.05);
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.education-item h4 {
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.education-item p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
 .coding-profiles {
     display: flex;
     gap: 1rem;
@@ -350,10 +372,25 @@ section h2 span::after {
     margin-bottom: 1rem;
 }
 
-.project-content p {
-    color: var(--text-light);
+.project-details {
+    list-style: none;
     margin-bottom: 1.5rem;
+}
+
+.project-details li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-light);
     font-size: 0.95rem;
+}
+
+.project-details li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+    font-weight: bold;
 }
 
 .project-links {
@@ -531,9 +568,52 @@ section h2 span::after {
     transform: translateY(-3px);
 }
 
+/* Certifications Section */
+.certifications {
+    background: #fff;
+}
+
+.certifications-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.certification-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.certification-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.certification-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.certification-card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--secondary-color);
+}
+
+.certification-card p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
 /* Contact Section */
 .contact {
-    background: #fff;
+    background: var(--light-color);
 }
 
 #contact-form {
@@ -696,4 +776,32 @@ footer {
 .sticky {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     padding: 0.5rem 0;
+}
+
+/* Notification for form submission */
+.form-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 10000;
+}
+
+.form-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.form-notification i {
+    font-size: 1.5rem;
 }

@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const skillsCategories = document.querySelectorAll('.skill-category');
     const projectCards = document.querySelectorAll('.project-card');
     const timelineItems = document.querySelectorAll('.timeline-item');
+    const certificationCards = document.querySelectorAll('.certification-card');
     
     const observerOptions = {
         threshold: 0.1,
@@ -110,13 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
         item.classList.add('fade-in');
         observer.observe(item);
     });
-});
-
-// Add current year to footer
-document.addEventListener('DOMContentLoaded', function() {
-    const yearElement = document.querySelector('footer p');
-    if (yearElement) {
-        const currentYear = new Date().getFullYear();
-        yearElement.innerHTML = `&copy; ${currentYear} Athar Sayed. All rights reserved.`;
-    }
+    
+    certificationCards.forEach(card => {
+        card.classList.add('fade-in');
+        observer.observe(card);
+    });
+    
+    // Set current year in footer
+    const currentYear = new Date().getFullYear();
+    document.getElementById('current-year').textContent = currentYear;
 });
