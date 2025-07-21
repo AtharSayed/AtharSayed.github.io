@@ -1,13 +1,14 @@
 /* Global Styles */
 :root {
-    --primary-color: #4e54c8;
-    --secondary-color: #1a1a2e;
-    --light-color: #f8f9fa;
-    --dark-color: #16213e;
-    --accent-color: #f05454;
-    --highlight-color: #ff7f50;
-    --text-color: #333;
-    --text-light: #6c757d;
+    --primary-color: #2C5F8F; /* Deep Ocean Blue - Professional and strong */
+    --secondary-color: #1a1a2e; /* Dark Blue-Black - For deep contrast elements like header background and primary text */
+    --light-color: #f8f9fa; /* Off-white - Clean background for sections */
+    --dark-color: #343a40; /* Dark Grey - For general text on light backgrounds, softer than secondary */
+    --accent-color: #C06C84; /* Muted Rose/Dusty Mauve - Sophisticated accent for subtle highlights */
+    --highlight-color: #A68A57; /* Burnished Gold/Bronze - For main highlights, providing warmth and prestige */
+    --text-color-dark-bg: #E0E0E0; /* Light Grey for text on dark backgrounds like hero and header */
+    --text-color-light-bg: #343a40; /* Dark Grey for text on light backgrounds */
+    --text-light: #6c757d; /* Medium Grey for less prominent text */
 }
 
 * {
@@ -19,7 +20,7 @@
 body {
     font-family: 'Poppins', sans-serif;
     line-height: 1.7;
-    color: var(--text-color);
+    color: var(--text-color-light-bg); /* Default text color for body */
     background-color: #f9f9f9;
     overflow-x: hidden;
 }
@@ -33,6 +34,7 @@ a {
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     line-height: 1.2;
+    color: var(--secondary-color); /* Headings on light backgrounds */
 }
 
 .container {
@@ -58,13 +60,13 @@ section {
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: 500;
-    box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3);
+    box-shadow: 0 4px 15px rgba(44, 95, 143, 0.3);
 }
 
 .btn:hover {
-    background: #3a41b8;
+    background: #234E7B; /* Slightly darker shade of primary for hover */
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(78, 84, 200, 0.4);
+    box-shadow: 0 6px 20px rgba(44, 95, 143, 0.4);
 }
 
 .btn i {
@@ -84,8 +86,8 @@ section {
 
 /* Header & Navigation */
 header {
-    background: rgba(26, 26, 46, 0.95);
-    color: #fff;
+    background: rgba(26, 26, 46, 0.95); /* Darker, almost black for strong navigation contrast */
+    color: var(--text-color-dark-bg); /* Light text on dark background */
     padding: 1rem 0;
     position: fixed;
     width: 100%;
@@ -103,7 +105,7 @@ nav ul {
 }
 
 nav ul li a {
-    color: #fff;
+    color: var(--text-color-dark-bg); /* Light text on dark background */
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 50px;
@@ -122,8 +124,9 @@ nav ul li a:hover {
     align-items: center;
     justify-content: center;
     text-align: center;
-    background: linear-gradient(135deg, rgba(30, 30, 60, 0.9), rgba(50, 50, 100, 0.9)), url('images/hero-bg.jpg') no-repeat center center/cover;
-    color: #fff;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(52, 58, 64, 0.9)), url('images/hero-bg.jpg') no-repeat center center/cover;
+    background-size: cover; /* Ensure background image covers the area */
+    color: var(--text-color-dark-bg); /* Light text on dark background */
     position: relative;
 }
 
@@ -136,6 +139,7 @@ nav ul li a:hover {
     font-size: 3.5rem;
     margin-bottom: 1.5rem;
     line-height: 1.2;
+    color: #fff; /* White for main heading on dark hero */
 }
 
 .hero-content h2 {
@@ -143,10 +147,11 @@ nav ul li a:hover {
     margin-bottom: 2.5rem;
     font-weight: 400;
     opacity: 0.9;
+    color: var(--text-color-dark-bg); /* Light grey for subheading on dark hero */
 }
 
 .highlight {
-    color: var(--highlight-color);
+    color: var(--highlight-color); /* Highlight color remains */
 }
 
 .hero-links {
@@ -166,7 +171,7 @@ nav ul li a:hover {
 }
 
 .scroll-down a {
-    color: #fff;
+    color: var(--text-color-dark-bg); /* Light text for scroll down icon */
     font-size: 1.5rem;
     opacity: 0.7;
     transition: all 0.3s ease;
@@ -194,7 +199,7 @@ section h2 {
     text-align: center;
     margin-bottom: 4rem;
     font-size: 2.5rem;
-    color: var(--secondary-color);
+    color: var(--secondary-color); /* Primary heading color */
     position: relative;
 }
 
@@ -211,7 +216,7 @@ section h2 span::after {
     left: 0;
     width: 100%;
     height: 15px;
-    background: rgba(78, 84, 200, 0.2);
+    background: rgba(44, 95, 143, 0.2); /* Primary color with transparency */
     z-index: -1;
     border-radius: 5px;
 }
@@ -230,14 +235,14 @@ section h2 span::after {
 .about-img {
     flex: 1;
     position: relative;
-    display: flex; /* Added for centering image */
-    justify-content: center; /* Added for centering image */
-    align-items: center; /* Added for centering image */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .about-img img {
     width: 100%;
-    max-width: 300px; /* Made image a bit smaller */
+    max-width: 300px;
     border-radius: 15px;
     box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1);
     transition: all 0.5s ease;
@@ -254,7 +259,7 @@ section h2 span::after {
 .about-text p {
     margin-bottom: 1.5rem;
     font-size: 1.1rem;
-    color: var(--text-light);
+    color: var(--text-color-light-bg); /* Text on light background */
 }
 
 .education-details {
@@ -264,7 +269,7 @@ section h2 span::after {
 .education-item {
     margin-bottom: 1.5rem;
     padding: 1.5rem;
-    background: rgba(78, 84, 200, 0.05);
+    background: rgba(44, 95, 143, 0.05); /* Primary color with transparency */
     border-radius: 10px;
     border-left: 4px solid var(--primary-color);
 }
@@ -313,7 +318,7 @@ section h2 span::after {
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: rgba(78, 84, 200, 0.1);
+    background: rgba(44, 95, 143, 0.1); /* Primary color with transparency */
     border-radius: 50%;
     color: var(--primary-color);
     font-size: 1.2rem;
@@ -384,7 +389,7 @@ section h2 span::after {
     position: relative;
     padding-left: 1.5rem;
     margin-bottom: 0.8rem;
-    color: var(--text-light);
+    color: var(--text-color-light-bg); /* Text on light background */
     font-size: 0.95rem;
 }
 
@@ -414,178 +419,10 @@ section h2 span::after {
 .project-link:hover {
     color: var(--accent-color);
 }
-
 .project-link i {
     font-size: 0.8rem;
 }
-.publications {
-    padding: 60px 20px;
-    background-color: #f9f9f9;
-}
 
-.publications h2 {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.publications-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.publication-card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    padding: 25px;
-    max-width: 800px;
-    width: 100%;
-    margin: 20px auto;
-    display: flex;
-    gap: 20px;
-}
-
-.publication-icon {
-    font-size: 40px;
-    color: #007bff;
-    margin-top: 5px;
-}
-
-.publication-content h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-
-.publication-meta {
-    font-size: 14px;
-    color: #777;
-}
-
-.publication-abstract {
-    margin: 15px 0;
-    font-size: 15px;
-    line-height: 1.6;
-}
-
-.publication-links {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.publications {
-    background: #f9fafc;
-    padding: 60px 20px;
-}
-
-.publications h2 {
-    text-align: center;
-    font-size: 32px;
-    margin-bottom: 50px;
-}
-
-.publications-container {
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
-.publication-card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 30px;
-    display: flex;
-    flex-wrap: wrap;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-    gap: 25px;
-    align-items: flex-start;
-    transition: transform 0.3s ease;
-}
-
-.publication-card:hover {
-    transform: translateY(-5px);
-}
-
-.pub-left {
-    flex: 0 0 80px;
-    text-align: center;
-}
-
-.publication-icon {
-    font-size: 40px;
-    color: #007bff;
-}
-
-.conference-badge {
-    margin-top: 10px;
-    background: #007bff;
-    color: #fff;
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.pub-right {
-    flex: 1;
-}
-
-.pub-title {
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.pub-authors {
-    font-size: 14px;
-    color: #555;
-    margin-bottom: 12px;
-}
-
-.pub-abstract {
-    font-size: 15px;
-    color: #444;
-    line-height: 1.6;
-    margin-bottom: 20px;
-}
-
-.publication-links {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.publication-links .btn {
-    text-decoration: none;
-    padding: 10px 18px;
-    border-radius: 5px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.publication-links .btn i {
-    margin-right: 6px;
-}
-
-.publication-links .btn {
-    background-color: #007bff;
-    color: #fff;
-}
-
-.publication-links .btn:hover {
-    background-color: #0056b3;
-}
-
-.publication-links .btn-outline {
-    background-color: transparent;
-    border: 2px solid #007bff;
-    color: #007bff;
-}
-
-.publication-links .btn-outline:hover {
-    background-color: #007bff;
-    color: #fff;
-}
 /* Publication Section */
 .publications {
     background: #f9fafc;
@@ -626,12 +463,12 @@ section h2 span::after {
 
 .publication-icon {
     font-size: 40px;
-    color: #007bff;
+    color: var(--primary-color); /* Updated to primary color */
 }
 
 .conference-badge {
     margin-top: 10px;
-    background: #007bff;
+    background: var(--primary-color); /* Updated to primary color */
     color: #fff;
     padding: 4px 10px;
     border-radius: 5px;
@@ -646,18 +483,18 @@ section h2 span::after {
 .pub-title {
     font-size: 20px;
     margin-bottom: 10px;
-    color: #333;
+    color: var(--secondary-color); /* Updated to secondary color */
 }
 
 .pub-authors {
     font-size: 14px;
-    color: #555;
+    color: var(--text-light); /* Adjusted for readability */
     margin-bottom: 12px;
 }
 
 .pub-abstract {
     font-size: 15px;
-    color: #444;
+    color: var(--text-color-light-bg); /* Adjusted for readability */
     line-height: 1.6;
     margin-bottom: 20px;
 }
@@ -681,22 +518,22 @@ section h2 span::after {
 }
 
 .publication-links .btn {
-    background-color: #007bff;
+    background-color: var(--primary-color); /* Updated to primary color */
     color: #fff;
 }
 
 .publication-links .btn:hover {
-    background-color: #0056b3;
+    background-color: #234E7B; /* Slightly darker primary for hover */
 }
 
 .publication-links .btn-outline {
     background-color: transparent;
-    border: 2px solid #007bff;
-    color: #007bff;
+    border: 2px solid var(--primary-color); /* Updated to primary color */
+    color: var(--primary-color); /* Updated to primary color */
 }
 
 .publication-links .btn-outline:hover {
-    background-color: #007bff;
+    background-color: var(--primary-color); /* Updated to primary color */
     color: #fff;
 }
 
@@ -729,7 +566,7 @@ section h2 span::after {
 .skill-icon {
     width: 70px;
     height: 70px;
-    background: rgba(78, 84, 200, 0.1);
+    background: rgba(44, 95, 143, 0.1); /* Primary color with transparency */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -747,14 +584,14 @@ section h2 span::after {
 .skill-category ul {
     list-style: none;
     text-align: left;
-    padding-left: 0; /* Ensure no default padding from ul */
+    padding-left: 0;
 }
 
 .skill-category li {
     margin-bottom: 0.8rem;
     position: relative;
     padding-left: 1.8rem;
-    color: var(--text-light);
+    color: var(--text-color-light-bg); /* Text on light background */
 }
 
 .skill-category li::before {
@@ -821,7 +658,7 @@ section h2 span::after {
     color: var(--text-light);
     font-size: 0.9rem;
     margin-bottom: 1rem;
-    background: rgba(78, 84, 200, 0.1);
+    background: rgba(44, 95, 143, 0.1); /* Primary color with transparency */
     padding: 0.3rem 0.8rem;
     border-radius: 50px;
     display: inline-block;
@@ -833,12 +670,12 @@ section h2 span::after {
 
 .timeline-item li {
     margin-bottom: 0.8rem;
-    color: var(--text-light);
+    color: var(--text-color-light-bg); /* Text on light background */
 }
 
 .download-btn {
     color: var(--primary-color);
-    background: rgba(78, 84, 200, 0.1);
+    background: rgba(44, 95, 143, 0.1); /* Primary color with transparency */
     width: 35px;
     height: 35px;
     border-radius: 50%;
@@ -929,7 +766,7 @@ section h2 span::after {
 .form-group textarea:focus {
     border-color: var(--primary-color);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.1);
+    box-shadow: 0 0 0 3px rgba(44, 95, 143, 0.1);
 }
 
 .form-group textarea {
@@ -940,7 +777,7 @@ section h2 span::after {
 /* Footer */
 footer {
     background: var(--secondary-color);
-    color: #fff;
+    color: var(--text-color-dark-bg); /* Light text on dark background */
     padding: 3rem 0;
     text-align: center;
 }
@@ -959,7 +796,7 @@ footer {
 }
 
 .footer-links a {
-    color: #fff;
+    color: var(--text-color-dark-bg); /* Light text on dark background */
     opacity: 0.8;
     transition: all 0.3s ease;
 }
