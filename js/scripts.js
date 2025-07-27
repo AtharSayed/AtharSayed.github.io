@@ -1,256 +1,168 @@
-// Mobile menu functionality
+/**
+ * Athar Sayed's Portfolio - Optimized Main JS
+ * Mobile menu fixes, performance improvements, and cross-browser support
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Create mobile menu structure
+    // =============================================
+    // 1. ENHANCED MOBILE MENU WITH TOUCH SUPPORT
+    // =============================================
     const header = document.querySelector('header');
     const nav = document.querySelector('nav');
+    const navList = nav ? nav.querySelector('ul') : null;
     
-    // Create mobile menu toggle button
-    const mobileToggle = document.createElement('button');
-    mobileToggle.className = 'mobile-menu-toggle';
-    mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
-    mobileToggle.setAttribute('aria-label', 'Toggle mobile menu');
-    
-    // Create nav container
-    const navContainer = document.createElement('div');
-    navContainer.className = 'nav-container';
-    
-    // Create logo
-    const logo = document.createElement('a');
-    logo.href = '#';
-    logo.className = 'logo';
-    logo.textContent = 'Portfolio';
-    
-    // Clone navigation for mobile
-    const mobileMenu = document.createElement('div');
-    mobileMenu.className = 'mobile-menu';
-    const navClone = nav.cloneNode(true);
-    mobileMenu.appendChild(navClone);
-    
-    // Restructure header
-    navContainer.appendChild(logo);
-    navContainer.appendChild(nav);
-    navContainer.appendChild(mobileToggle);
-    header.innerHTML = '';
-    header.appendChild(navContainer);
-    header.appendChild(mobileMenu);
-    
-    // Mobile menu toggle functionality
-    let isMenuOpen = false;
-    
-    mobileToggle.addEventListener('click', function() {
-        isMenuOpen = !isMenuOpen;
-        mobileMenu.classList.toggle('active', isMenuOpen);
-        mobileToggle.innerHTML = isMenuOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-        
-        // Prevent body scroll when menu is open
-        document.body.style.overflow = isMenuOpen ? 'hidden' : '';
-    });
-    
-    // Close mobile menu when clicking on a link
-    mobileMenu.addEventListener('click', function(e) {
-        if (e.target.tagName === 'A') {
-            isMenuOpen = false;
-            mobileMenu.classList.remove('active');
-            mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = '';
-        }
-    });
-    
-    // Close mobile menu when clicking outside
-    document.addEventListener('click', function(e) {
-        if (isMenuOpen && !header.contains(e.target)) {
-            isMenuOpen = false;
-            mobileMenu.classList.remove('active');
-            mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = '';
-        }
-    });
-    
-    // Close mobile menu on resize to desktop
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768 && isMenuOpen) {
-            isMenuOpen = false;
-            mobileMenu.classList.remove('active');
-            mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = '';
-        }
-    });
-});
-
-// Enhanced smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-        
-        if (targetElement) {
-            const headerHeight = document.querySelector('header').offsetHeight;
-            const targetPosition = targetElement.offsetTop - headerHeight - 20;
-            
-            window.scrollTo({
-                top: targetPosition,
-                behavior: 'smooth'
-            });
-            
-            // Update URL without refreshing
-            if (history.pushState) {
-                history.pushState(null, null, targetId);
-            }
-        }
-    });
-});
-
-// Enhanced sticky header with resize handling
-let lastScrollY = window.scrollY;
-const header = document.querySelector('header');
-
-function handleScroll() {
-    const currentScrollY = window.scrollY;
-    const scrollingDown = currentScrollY > lastScrollY;
-    
-    // Add sticky class
-    header.classList.toggle('sticky', currentScrollY > 50);
-    
-    // Hide header when scrolling down, show when scrolling up (optional)
-    if (window.innerWidth > 768) {
-        if (scrollingDown && currentScrollY > 200) {
-            header.style.transform = 'translateY(-100%)';
-        } else {
-            header.style.transform = 'translateY(0)';
-        }
+    // Mobile toggle setup
+    let mobileToggle = document.querySelector('.mobile-menu-toggle');
+    if (!mobileToggle && nav) {
+        mobileToggle = document.createElement('button');
+        mobileToggle.className = 'mobile-menu-toggle';
+        mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        mobileToggle.setAttribute('aria-label', 'Toggle mobile menu');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        nav.appendChild(mobileToggle);
     }
-    
-    lastScrollY = currentScrollY;
-}
 
-window.addEventListener('scroll', handleScroll, { passive: true });
-
-// Enhanced form submission with better validation
-const contactForm = document.getElementById('contact-form');
-if (contactForm) {
-    // Add labels to form inputs if they don't exist
-    const formInputs = contactForm.querySelectorAll('input, textarea');
-    formInputs.forEach(input => {
-        if (!input.previousElementSibling || input.previousElementSibling.tagName !== 'LABEL') {
-            const label = document.createElement('label');
-            label.setAttribute('for', input.id);
-            label.textContent = input.placeholder || input.name;
-            input.parentNode.insertBefore(label, input);
-        }
-    });
-    
-    contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Menu toggle function
+    const toggleMenu = () => {
+        if (!navList) return;
         
-        // Get form values
-        const formData = new FormData(contactForm);
-        const name = formData.get('name') || document.getElementById('name')?.value;
-        const email = formData.get('email') || document.getElementById('email')?.value;
-        const message = formData.get('message') || document.getElementById('message')?.value;
+        const isOpening = !navList.classList.contains('active');
         
-        // Basic validation
-        if (!name || !email || !message) {
-            showNotification('Please fill in all fields.', 'error');
-            return;
+        // Toggle menu state
+        navList.classList.toggle('active', isOpening);
+        mobileToggle?.setAttribute('aria-expanded', isOpening);
+        
+        // Update icon
+        if (mobileToggle) {
+            mobileToggle.innerHTML = isOpening 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
         }
         
-        if (!isValidEmail(email)) {
-            showNotification('Please enter a valid email address.', 'error');
-            return;
+        // Lock scroll when open
+        document.body.style.overflow = isOpening ? 'hidden' : '';
+        
+        // iOS redraw fix
+        if (isOpening) {
+            header.style.display = 'none';
+            header.offsetHeight;
+            header.style.display = '';
         }
-        
-        // Log form data (in production, send to server)
-        console.log({ name, email, message });
-        
-        // Show success notification
-        showNotification('Thank you for your message! I will get back to you soon.', 'success');
-        
-        // Reset the form
-        contactForm.reset();
-    });
-}
+    };
 
-// Email validation function
-function isValidEmail(email) {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailPattern.test(email);
-}
+    // Event listeners with passive handling
+    if (mobileToggle) {
+        // Click handler
+        mobileToggle.addEventListener('click', toggleMenu);
+        
+        // Touch handler (for mobile)
+        mobileToggle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleMenu();
+        }, { passive: false });
+    }
 
-// Enhanced notification system
-function showNotification(message, type = 'success') {
-    // Remove existing notifications
-    const existingNotifications = document.querySelectorAll('.form-notification');
-    existingNotifications.forEach(notification => notification.remove());
-    
-    const notification = document.createElement('div');
-    notification.className = `form-notification ${type}`;
-    
-    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
-    const bgColor = type === 'success' ? 'var(--primary-color)' : '#e74c3c';
-    
-    notification.innerHTML = `
-        <i class="fas ${icon}"></i>
-        <span>${message}</span>
-    `;
-    notification.style.background = bgColor;
-    
-    document.body.appendChild(notification);
-    
-    // Show notification
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    // Hide after 5 seconds
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
+    // Close menu when clicking links
+    if (navList) {
+        navList.addEventListener('click', (e) => {
+            if (e.target.closest('a')) {
+                toggleMenu();
             }
-        }, 300);
-    }, 5000);
-}
+        });
+    }
 
-// Enhanced animation on scroll with better performance
-document.addEventListener('DOMContentLoaded', function() {
+    // Close when clicking outside
+    const closeOnOutsideClick = (e) => {
+        if (navList?.classList.contains('active') &&
+            !e.target.closest('nav') &&
+            !e.target.closest('.mobile-menu-toggle')) {
+            toggleMenu();
+        }
+    };
+    document.addEventListener('click', closeOnOutsideClick);
+    document.addEventListener('touchstart', closeOnOutsideClick, { passive: true });
+
+    // Reset on desktop resize
+    window.addEventListener('resize', debounce(() => {
+        if (window.innerWidth > 768 && navList?.classList.contains('active')) {
+            toggleMenu();
+        }
+    }, 250));
+
+    // =============================================
+    // 2. SMOOTH SCROLLING
+    // =============================================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                const headerHeight = header?.offsetHeight || 0;
+                const targetPosition = targetElement.offsetTop - headerHeight - 20;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+                
+                if (history.pushState) {
+                    history.pushState(null, null, targetId);
+                }
+            }
+        });
+    });
+
+    // =============================================
+    // 3. STICKY HEADER
+    // =============================================
+    let lastScrollY = window.scrollY;
+    const handleScroll = () => {
+        const currentScrollY = window.scrollY;
+        const scrollingDown = currentScrollY > lastScrollY;
+        
+        header?.classList.toggle('sticky', currentScrollY > 50);
+        
+        if (window.innerWidth > 768) {
+            header.style.transform = scrollingDown && currentScrollY > 200 
+                ? 'translateY(-100%)' 
+                : 'translateY(0)';
+        }
+        
+        lastScrollY = currentScrollY;
+    };
+    window.addEventListener('scroll', debounce(handleScroll, 16), { passive: true });
+
+    // =============================================
+    // 4. ANIMATION ON SCROLL
+    // =============================================
     const animatedElements = document.querySelectorAll(
         'section, .skill-category, .project-card, .timeline-item, .certification-card, .publication-card'
     );
     
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver(function(entries) {
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
                 observer.unobserve(entry.target);
             }
         });
-    }, observerOptions);
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
     
     animatedElements.forEach(element => {
         element.classList.add('fade-in');
         observer.observe(element);
     });
-    
-    // Set current year in footer
-    const currentYear = new Date().getFullYear();
-    const yearElement = document.getElementById('current-year');
-    if (yearElement) {
-        yearElement.textContent = currentYear;
-    }
-});
 
-// Lazy loading for images
-document.addEventListener('DOMContentLoaded', function() {
-    const images = document.querySelectorAll('img[data-src]');
-    
-    const imageObserver = new IntersectionObserver((entries, observer) => {
+    // =============================================
+    // 5. LAZY LOADING IMAGES
+    // =============================================
+    const lazyImages = document.querySelectorAll('img[data-src]');
+    const imageObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
@@ -259,65 +171,144 @@ document.addEventListener('DOMContentLoaded', function() {
                 imageObserver.unobserve(img);
             }
         });
-    });
+    }, { rootMargin: '200px' });
     
-    images.forEach(img => imageObserver.observe(img));
+    lazyImages.forEach(img => imageObserver.observe(img));
+
+    // =============================================
+    // 6. FORM VALIDATION (if form exists)
+    // =============================================
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        // Add missing labels
+        contactForm.querySelectorAll('input, textarea').forEach(input => {
+            if (!input.previousElementSibling || input.previousElementSibling.tagName !== 'LABEL') {
+                const label = document.createElement('label');
+                label.setAttribute('for', input.id);
+                label.textContent = input.placeholder || input.name;
+                input.parentNode.insertBefore(label, input);
+            }
+        });
+        
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(contactForm);
+            const name = formData.get('name');
+            const email = formData.get('email');
+            const message = formData.get('message');
+            
+            if (!name || !email || !message) {
+                showNotification('Please fill in all fields.', 'error');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showNotification('Please enter a valid email address.', 'error');
+                return;
+            }
+            
+            console.log({ name, email, message });
+            showNotification('Thank you for your message! I will get back to you soon.', 'success');
+            contactForm.reset();
+        });
+    }
+
+    // =============================================
+    // 7. FOOTER YEAR UPDATE
+    // =============================================
+    const yearElement = document.getElementById('current-year');
+    if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+    }
+
+    // =============================================
+    // 8. PAGE LOAD COMPLETE
+    // =============================================
+    window.addEventListener('load', () => {
+        document.body.classList.add('loaded');
+    });
 });
 
-// Keyboard navigation enhancement
-document.addEventListener('keydown', function(e) {
-    // ESC key closes mobile menu
+// =============================================
+// UTILITY FUNCTIONS
+// =============================================
+
+/**
+ * Show notification popup
+ */
+function showNotification(message, type = 'success') {
+    const existing = document.querySelector('.form-notification');
+    if (existing) existing.remove();
+    
+    const notification = document.createElement('div');
+    notification.className = `form-notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+        <span>${message}</span>
+    `;
+    notification.style.background = type === 'success' ? 'var(--primary-color)' : '#e74c3c';
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+/**
+ * Email validation
+ */
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/**
+ * Debounce function for performance
+ */
+function debounce(func, wait) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+/**
+ * Escape key handler
+ */
+document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        const mobileMenu = document.querySelector('.mobile-menu');
-        const mobileToggle = document.querySelector('.mobile-menu-toggle');
-        
-        if (mobileMenu && mobileMenu.classList.contains('active')) {
+        const mobileMenu = document.querySelector('nav ul');
+        if (mobileMenu?.classList.contains('active')) {
             mobileMenu.classList.remove('active');
-            mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            if (toggle) {
+                toggle.innerHTML = '<i class="fas fa-bars"></i>';
+                toggle.setAttribute('aria-expanded', 'false');
+            }
             document.body.style.overflow = '';
         }
     }
 });
 
-// Performance optimization: debounce scroll and resize events
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Apply debouncing to scroll and resize events
-window.addEventListener('scroll', debounce(handleScroll, 16), { passive: true });
-window.addEventListener('resize', debounce(function() {
-    // Handle resize events if needed
-}, 250));
-
-// Add loading states for better UX
-window.addEventListener('load', function() {
-    document.body.classList.add('loaded');
-});
-
-// Error handling for missing elements
-function safeQuerySelector(selector) {
+/**
+ * Safe DOM query helpers
+ */
+function safeQuery(selector) {
     try {
         return document.querySelector(selector);
-    } catch (error) {
-        console.warn(`Element not found: ${selector}`);
+    } catch (e) {
+        console.warn(`Query failed: ${selector}`, e);
         return null;
     }
 }
 
-function safeQuerySelectorAll(selector) {
+function safeQueryAll(selector) {
     try {
         return document.querySelectorAll(selector);
-    } catch (error) {
-        console.warn(`Elements not found: ${selector}`);
+    } catch (e) {
+        console.warn(`QueryAll failed: ${selector}`, e);
         return [];
     }
 }
