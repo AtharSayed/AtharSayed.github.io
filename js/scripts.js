@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // =============================================
     window.addEventListener('load', () => {
         document.body.classList.add('loaded');
+        initParticleNetworkAnimation(); // Initialize the particle network animation on load
     });
 });
 
@@ -311,4 +312,118 @@ function safeQueryAll(selector) {
         console.warn(`QueryAll failed: ${selector}`, e);
         return [];
     }
+}
+
+// =============================================
+// PARTICLE NETWORK BACKGROUND ANIMATION
+// =============================================
+function initParticleNetworkAnimation() {
+    const canvas = document.getElementById('hero-background-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    // Set canvas dimensions and handle resize
+    const setCanvasSize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+
+    // Particle properties
+    const particles = [];
+    const particleCount = 70; // Number of particles (dots)
+    const maxDistance = 120; // Max distance for lines to connect particles
+    const particleRadius = 1.5; // Radius of each dot
+
+    // Particle class
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            // Random speed, slightly biased towards center if desired, but keeping it simple for now
+            this.speedX = (Math.random() - 0.5) * 0.4; // Slower movement
+            this.speedY = (Math.random() - 0.5) * 0.4;
+            this.opacity = Math.random() * 0.5 + 0.1; // Subtle opacity for dots
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            // Wrap particles around the screen
+            if (this.x < 0) this.x = canvas.width;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.y < 0) this.y = canvas.height;
+            if (this.y > canvas.height) this.y = 0;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, particleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; // White dots
+            ctx.fill();
+        }
+    }
+
+    // Initialize particles
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+    }
+
+    // Draw lines between nearby particles
+    const drawLines = () => {
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const p1 = particles[i];
+                const p2 = particles[j];
+
+                const distance = Math.sqrt(
+                    (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
+                );
+
+                if (distance < maxDistance) {
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    // Line opacity based on distance (fades out as distance increases)
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${((maxDistance - distance) / maxDistance) * 0.2})`; // Subtle white lines
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        }
+    };
+
+    // Animation loop
+    const animate = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+
+        particles.forEach(particle => {
+            particle.update();
+            particle.draw();
+        });
+
+        drawLines(); // Draw lines after updating particles
+
+        animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Handle resize event
+    const handleResize = () => {
+        setCanvasSize();
+        // Re-initialize particles on resize to ensure they are within new bounds
+        particles.forEach(p => p.reset()); 
+    };
+
+    // Initial setup
+    setCanvasSize();
+    animate();
+
+    // Event listener for window resize, debounced for performance
+    window.addEventListener('resize', debounce(handleResize, 100));
 }
