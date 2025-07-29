@@ -323,31 +323,63 @@ function initParticleNetworkAnimation() {
     const ctx = canvas.getContext('2d');
     let animationFrameId;
 
+    // Define breakpoints for particle behavior
+    const MOBILE_BREAKPOINT = 768; // Common breakpoint for mobile vs. desktop
+
+    // Determine particle count and max distance based on screen size
+    let particleCount;
+    let maxDistance;
+    let particleSpeedMultiplier; // New variable for dynamic speed
+
+    const setParticleConfig = () => {
+        if (window.innerWidth <= MOBILE_BREAKPOINT) {
+            particleCount = 50;   // Reduced for mobile to prevent clutter
+            maxDistance = 100;    // Reduced connection distance for mobile
+            particleSpeedMultiplier = 0.3; // Slower speed for mobile
+        } else {
+            particleCount = 150;  // Desktop particle count
+            maxDistance = 180;    // Desktop connection distance
+            particleSpeedMultiplier = 0.5; // Desktop speed
+        }
+    };
+
     // Set canvas dimensions and handle resize
     const setCanvasSize = () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        
+        // Re-evaluate particle config on resize
+        setParticleConfig(); 
+
+        // Important: Re-initialize particles if count changes significantly or for new distribution
+        // Clear existing particles and recreate them with new counts/positions
+        particles.length = 0; // Clear the array
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle()); // Re-add particles with new settings
+        }
+        // Ensure initial positions are correctly set for new particles
+        particles.forEach(p => p.resetInitialPosition());
     };
 
     // Particle properties
-    const particles = [];
-    const particleCount = 70; // Number of particles (dots)
-    const maxDistance = 120; // Max distance for lines to connect particles
-    const particleRadius = 1.5; // Radius of each dot
+    const particles = []; // Initialize as empty, filled by setCanvasSize
+    const particleMinRadius = 1.0; 
+    const particleMaxRadius = 2.5; 
 
     // Particle class
     class Particle {
         constructor() {
-            this.reset();
+            this.resetInitialPosition(); // Call this on construction
+            this.speedX = (Math.random() - 0.5) * particleSpeedMultiplier; 
+            this.speedY = (Math.random() - 0.5) * particleSpeedMultiplier;
+            this.opacity = Math.random() * 0.6 + 0.2; 
+            this.radius = Math.random() * (particleMaxRadius - particleMinRadius) + particleMinRadius; 
         }
 
-        reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            // Random speed, slightly biased towards center if desired, but keeping it simple for now
-            this.speedX = (Math.random() - 0.5) * 0.4; // Slower movement
-            this.speedY = (Math.random() - 0.5) * 0.4;
-            this.opacity = Math.random() * 0.5 + 0.1; // Subtle opacity for dots
+        // Separate method for setting initial position
+        resetInitialPosition() {
+            this.x = Math.random() * canvas.width; 
+            this.y = Math.random() * canvas.height; 
         }
 
         update() {
@@ -363,16 +395,14 @@ function initParticleNetworkAnimation() {
 
         draw() {
             ctx.beginPath();
-            ctx.arc(this.x, this.y, particleRadius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; // White dots
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
             ctx.fill();
         }
     }
 
-    // Initialize particles
-    for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-    }
+    // Initial setup for canvas size and particle configuration
+    setCanvasSize(); // This will also call setParticleConfig and populate 'particles' array
 
     // Draw lines between nearby particles
     const drawLines = () => {
@@ -385,13 +415,13 @@ function initParticleNetworkAnimation() {
                     (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
                 );
 
-                if (distance < maxDistance) {
+                if (distance < maxDistance) { // Use the dynamically set maxDistance
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
                     // Line opacity based on distance (fades out as distance increases)
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${((maxDistance - distance) / maxDistance) * 0.2})`; // Subtle white lines
-                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${((maxDistance - distance) / maxDistance) * 0.6})`; 
+                    ctx.lineWidth = 1.9; 
                     ctx.stroke();
                 }
             }
@@ -400,29 +430,32 @@ function initParticleNetworkAnimation() {
 
     // Animation loop
     const animate = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         particles.forEach(particle => {
+            // Re-assign speed based on current particleSpeedMultiplier
+            // This is important if speed changes on resize.
+            // Only update if speedMultiplier changes, otherwise it will be jittery.
+            // More robust would be to recalculate speed on construction/reset.
+            // For this continuous loop, it's better to manage speed in Particle constructor
+            // and re-instantiate particles on resize (which we are already doing).
             particle.update();
             particle.draw();
         });
 
-        drawLines(); // Draw lines after updating particles
+        drawLines();
 
         animationFrameId = requestAnimationFrame(animate);
     };
 
     // Handle resize event
     const handleResize = () => {
-        setCanvasSize();
-        // Re-initialize particles on resize to ensure they are within new bounds
-        particles.forEach(p => p.reset()); 
+        cancelAnimationFrame(animationFrameId); // Stop current animation frame
+        setCanvasSize(); // This will re-evaluate config and re-initialize particles
+        animate(); // Start new animation loop
     };
 
-    // Initial setup
-    setCanvasSize();
-    animate();
+    animate(); // Start animation
 
-    // Event listener for window resize, debounced for performance
-    window.addEventListener('resize', debounce(handleResize, 100));
+    window.addEventListener('resize', debounce(handleResize, 250)); // Debounce resize more for dynamic particle counts
 }
