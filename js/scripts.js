@@ -1,5 +1,4 @@
 /**
- * Athar Sayed's Portfolio - Optimized Main JS
  * Mobile menu fixes, performance improvements, and cross-browser support
  */
 
