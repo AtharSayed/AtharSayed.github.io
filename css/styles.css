@@ -4,7 +4,7 @@
   --secondary-color: #1a1a2e;
   --light-color: #f8f9fa;
   --dark-color: #343a40;
-  --accent-color: #C06C84;
+  --accent-color: #C06C84; /* This accent color can be used more creatively */
   --highlight-color: #A68A57;
   --text-color-dark-bg: #E0E0E0;
   --text-color-light-bg: #343a40;
@@ -54,6 +54,7 @@ h1, h2, h3, h4, h5, h6 {
 
 section {
   padding: 4rem 0;
+  position: relative; /* For potential future animations */
 }
 
 /* Responsive Typography */
@@ -110,6 +111,7 @@ p {
 .btn-outline:hover {
   background: var(--primary-color);
   color: #fff;
+  box-shadow: 0 6px 20px rgba(44, 95, 143, 0.4);
 }
 
 /* Header & Navigation */
@@ -162,6 +164,7 @@ nav ul li a {
 nav ul li a:hover {
   color: var(--primary-color);
   background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px); /* Subtle hover for nav items */
 }
 
 /* Mobile Menu */
@@ -210,23 +213,52 @@ nav ul li a:hover {
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(52, 58, 64, 0.9)), 
-              url('images/hero-bg.jpg') no-repeat center center/cover;
+  /* Enhanced background with subtle pattern and color overlay */
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(52, 58, 64, 0.95)),
+              url('https://www.transparenttextures.com/patterns/clean-gray-paper.png'); /* Subtle texture */
+  background-size: cover, auto; /* Cover for gradient, auto for pattern */
+  background-position: center center, 0 0;
   color: var(--text-color-dark-bg);
   position: relative;
   padding: 5rem 1rem 2rem;
+  overflow: hidden; /* Ensure no overflow from potential animations */
 }
+
+/* Add a subtle animation to the background or a subtle overlay effect */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top left, rgba(192, 108, 132, 0.1), transparent 50%),
+                radial-gradient(circle at bottom right, rgba(44, 95, 143, 0.1), transparent 50%);
+    opacity: 0.6;
+    z-index: 1;
+    pointer-events: none;
+}
+
 
 .hero-content {
   max-width: 800px;
   width: 100%;
   padding: 0 1rem;
+  position: relative; /* To be above the ::before pseudo-element */
+  z-index: 2;
 }
 
 .hero-content h1 {
   margin-bottom: 1.5rem;
   line-height: 1.2;
   color: #fff;
+  /* Gradient for main heading */
+  background: linear-gradient(90deg, #ffffff, var(--highlight-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* Standard property for compatibility */
+  color: transparent; /* Standard property for compatibility */
+  display: inline-block; /* Essential for background-clip to work */
 }
 
 .hero-content h2 {
@@ -234,10 +266,6 @@ nav ul li a:hover {
   font-weight: 400;
   opacity: 0.9;
   color: var(--text-color-dark-bg);
-}
-
-.highlight {
-  color: var(--highlight-color);
 }
 
 .hero-links {
@@ -253,30 +281,29 @@ nav ul li a:hover {
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  animation: bounce 2s infinite;
+  animation: floatBounce 2s infinite ease-in-out; /* Smoother animation */
 }
 
 .scroll-down a {
-  color: var(--text-color-dark-bg);
-  font-size: 1.5rem;
-  opacity: 0.7;
+  color: var(--accent-color); /* Use accent color for more pop */
+  font-size: 1.8rem; /* Slightly larger */
+  opacity: 0.8;
   transition: all var(--transition-speed) ease;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)); /* Subtle shadow for icon */
 }
 
 .scroll-down a:hover {
   opacity: 1;
   color: var(--highlight-color);
+  transform: scale(1.1);
 }
 
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+@keyframes floatBounce {
+  0%, 100% {
     transform: translateY(0) translateX(-50%);
   }
-  40% {
-    transform: translateY(-20px) translateX(-50%);
-  }
-  60% {
-    transform: translateY(-10px) translateX(-50%);
+  50% {
+    transform: translateY(-10px) translateX(-50%); /* Smaller bounce */
   }
 }
 
@@ -304,6 +331,16 @@ section h2 span::after {
   background: rgba(44, 95, 143, 0.2);
   z-index: -1;
   border-radius: 5px;
+  /* Subtle animation for the underline effect */
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.6s ease;
+}
+
+/* Hover effect for section titles - requires JS to detect section in view for practical use */
+/* For demonstration, we'll apply it on hover */
+section h2:hover span::after {
+  transform: scaleX(1);
 }
 
 /* About Section */
@@ -331,11 +368,15 @@ section h2 span::after {
   box-shadow: var(--shadow-medium);
   transition: all 0.5s ease;
   border: 5px solid var(--primary-color);
+  outline: 5px solid rgba(192, 108, 132, 0.3); /* Accent outline */
+  outline-offset: -5px;
 }
 
 .about-img:hover img {
   transform: translateY(-10px) scale(1.02);
   box-shadow: var(--shadow-heavy);
+  border-color: var(--accent-color); /* Change border color on hover */
+  outline-color: var(--primary-color);
 }
 
 .about-text p {
@@ -356,11 +397,25 @@ section h2 span::after {
   border-radius: 10px;
   border-left: 5px solid var(--primary-color);
   transition: all var(--transition-speed) ease;
+  position: relative; /* For subtle icon */
+}
+
+.education-item::before {
+    content: '\f02d'; /* FontAwesome Book icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 1rem;
+    top: 1.5rem;
+    font-size: 2rem;
+    color: rgba(192, 108, 132, 0.2); /* Muted accent color */
+    z-index: 0;
 }
 
 .education-item:hover {
   transform: translateX(5px);
   box-shadow: var(--shadow-light);
+  border-left-color: var(--accent-color); /* Accent on hover */
 }
 
 .education-item h4 {
@@ -403,6 +458,7 @@ section h2 span::after {
   background: var(--primary-color);
   transform: translateY(-3px) scale(1.02);
   box-shadow: var(--shadow-light);
+  border: 1px solid var(--accent-color); /* Subtle border on hover */
 }
 
 .social-links {
@@ -431,7 +487,7 @@ section h2 span::after {
   background: var(--primary-color);
   color: #fff;
   transform: translateY(-5px) rotate(5deg);
-  box-shadow: 0 8px 20px rgba(44, 95, 143, 0.3);
+  box-shadow: 0 8px 20px rgba(44, 95, 143, 0.3), 0 0 15px var(--accent-color); /* Added glow */
 }
 
 /* Projects Section */
@@ -451,16 +507,19 @@ section h2 span::after {
   overflow: hidden;
   box-shadow: var(--shadow-light);
   transition: all 0.4s ease;
+  border: 1px solid transparent; /* Prepare for border on hover */
 }
 
 .project-card:hover {
   transform: translateY(-10px);
   box-shadow: var(--shadow-medium);
+  border-color: var(--accent-color); /* Accent border on hover */
 }
 
 .project-img {
   height: 200px;
   overflow: hidden;
+  position: relative;
 }
 
 .project-img img {
@@ -471,7 +530,23 @@ section h2 span::after {
 }
 
 .project-card:hover .project-img img {
-  transform: scale(1.05);
+  transform: scale(1.08); /* Slightly more zoom on hover */
+}
+
+.project-img::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent 50%); /* Darker gradient overlay */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.project-card:hover .project-img::after {
+    opacity: 1;
 }
 
 .project-content {
@@ -519,10 +594,12 @@ section h2 span::after {
   gap: 0.3rem;
   transition: all var(--transition-speed) ease;
   padding: 0.3rem 0;
+  border-bottom: 1px solid transparent; /* For underline effect */
 }
 
 .project-link:hover {
   color: var(--accent-color);
+  border-color: var(--accent-color); /* Underline on hover */
 }
 
 .project-link i {
@@ -550,12 +627,14 @@ section h2 span::after {
   box-shadow: var(--shadow-light);
   gap: 2rem;
   align-items: flex-start;
-  transition: transform var(--transition-speed) ease;
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
   margin-bottom: 2rem;
+  border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
 }
 
 .publication-card:hover {
   transform: translateY(-5px);
+  box-shadow: var(--shadow-medium), 0 0 10px rgba(192, 108, 132, 0.2); /* Accent shadow on hover */
 }
 
 .pub-left {
@@ -566,6 +645,12 @@ section h2 span::after {
 .publication-icon {
   font-size: 2.5rem;
   color: var(--primary-color);
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.publication-card:hover .publication-icon {
+    transform: scale(1.1); /* Icon slightly grows */
 }
 
 .conference-badge {
@@ -576,6 +661,11 @@ section h2 span::after {
   border-radius: 5px;
   font-size: 0.75rem;
   font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.publication-card:hover .conference-badge {
+    background-color: var(--accent-color); /* Accent color for badge on hover */
 }
 
 .pub-right {
@@ -648,11 +738,12 @@ section h2 span::after {
   box-shadow: var(--shadow-light);
   transition: all var(--transition-speed) ease;
   text-align: center;
+  border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
 }
 
 .skill-category:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-medium);
+  box-shadow: var(--shadow-medium), 0 0 10px rgba(44, 95, 143, 0.2); /* Primary shadow on hover */
 }
 
 .skill-icon {
@@ -666,6 +757,12 @@ section h2 span::after {
   margin: 0 auto 1.5rem;
   color: var(--primary-color);
   font-size: 1.8rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.skill-category:hover .skill-icon {
+    background: var(--accent-color); /* Accent background on hover */
+    color: #fff;
 }
 
 .skill-category h3 {
@@ -725,6 +822,7 @@ section h2 span::after {
   box-shadow: var(--shadow-light);
   position: relative;
   transition: all var(--transition-speed) ease;
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .timeline-item::before {
@@ -738,12 +836,20 @@ section h2 span::after {
   border-radius: 50%;
   border: 3px solid #fff;
   box-shadow: 0 0 0 3px var(--primary-color);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .timeline-item:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-medium);
+  border-color: var(--accent-color);
 }
+
+.timeline-item:hover::before {
+    background-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--accent-color);
+}
+
 
 .timeline-header {
   display: flex;
@@ -766,6 +872,12 @@ section h2 span::after {
   padding: 0.3rem 0.8rem;
   border-radius: 50px;
   white-space: nowrap;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.timeline-item:hover .date {
+    background-color: var(--accent-color);
+    color: #fff;
 }
 
 .timeline-item ul {
@@ -793,7 +905,8 @@ section h2 span::after {
 .download-btn:hover {
   background: var(--primary-color);
   color: #fff;
-  transform: translateY(-3px);
+  transform: translateY(-3px) scale(1.1); /* Slight scale on hover */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 /* Certifications Section */
@@ -816,17 +929,23 @@ section h2 span::after {
   box-shadow: var(--shadow-light);
   transition: all var(--transition-speed) ease;
   text-align: center;
+  border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
 }
 
 .certification-card:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-medium);
+  box-shadow: var(--shadow-medium), 0 0 10px rgba(192, 108, 132, 0.2); /* Accent shadow on hover */
 }
 
 .certification-icon {
   font-size: 2.5rem;
   color: var(--primary-color);
   margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.certification-card:hover .certification-icon {
+    color: var(--accent-color); /* Accent color on hover */
 }
 
 .certification-card h3 {
@@ -1150,68 +1269,6 @@ footer {
   /* Contact Form Mobile */
   #contact-form {
     padding: 2rem 1.5rem;
-  }
-  
-  /* Footer Mobile */
-  .footer-links {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  /* Form Notification Mobile */
-  .form-notification {
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
-    max-width: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 0 0.8rem;
-  }
-  
-  section {
-    padding: 2.5rem 0;
-  }
-  
-  .hero {
-    padding: 5rem 0.8rem 2rem;
-  }
-  
-  .hero-content h1 {
-    font-size: 2rem;
-  }
-  
-  .hero-content h2 {
-    font-size: 1.2rem;
-  }
-  
-  section h2 {
-    font-size: 1.8rem;
-    margin-bottom: 2rem;
-  }
-  
-  .btn {
-    padding: 0.7rem 1.5rem;
-    font-size: 0.9rem;
-  }
-  
-  .about-img img {
-    max-width: 220px;
-  }
-  
-  .education-item,
-  .project-content,
-  .timeline-item,
-  .skill-category,
-  .certification-card {
-    padding: 1.2rem;
-  }
-  
-  #contact-form {
-    padding: 1.5rem 1rem;
   }
   
   .form-group input,
