@@ -214,38 +214,32 @@ nav ul li a:hover {
   justify-content: center;
   text-align: center;
   /* Enhanced background with subtle pattern and color overlay */
-  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(52, 58, 64, 0.95)),
-              url('https://www.transparenttextures.com/patterns/clean-gray-paper.png'); /* Subtle texture */
-  background-size: cover, auto; /* Cover for gradient, auto for pattern */
-  background-position: center center, 0 0;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(52, 58, 64, 0.95));
+  background-size: cover;
+  background-position: center center;
   color: var(--text-color-dark-bg);
   position: relative;
   padding: 5rem 1rem 2rem;
   overflow: hidden; /* Ensure no overflow from potential animations */
 }
 
-/* Add a subtle animation to the background or a subtle overlay effect */
-.hero::before {
-    content: '';
+/* Canvas for geometric animation */
+#hero-background-canvas {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at top left, rgba(192, 108, 132, 0.1), transparent 50%),
-                radial-gradient(circle at bottom right, rgba(44, 95, 143, 0.1), transparent 50%);
-    opacity: 0.6;
-    z-index: 1;
-    pointer-events: none;
+    z-index: 0; /* Place it behind the content */
+    opacity: 0.3; /* Adjust opacity to make it subtle */
 }
-
 
 .hero-content {
   max-width: 800px;
   width: 100%;
   padding: 0 1rem;
   position: relative; /* To be above the ::before pseudo-element */
-  z-index: 2;
+  z-index: 2; /* Ensure content is above canvas */
 }
 
 .hero-content h1 {
