@@ -469,19 +469,17 @@ section h2:hover span::after {
   justify-content: center;
   width: 50px;
   height: 50px;
-  background: rgba(44, 95, 143, 0.15);
+  background: var(--secondary-color);
+  color: #fff;
   border-radius: 50%;
-  color: var(--primary-color);
   font-size: 1.5rem;
   transition: all var(--transition-speed) ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .social-links a:hover {
   background: var(--primary-color);
-  color: #fff;
-  transform: translateY(-5px) rotate(5deg);
-  box-shadow: 0 8px 20px rgba(44, 95, 143, 0.3), 0 0 15px var(--accent-color); /* Added glow */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 /* Projects Section */
@@ -493,54 +491,39 @@ section h2:hover span::after {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .project-card {
   background: #fff;
   border-radius: var(--border-radius);
-  overflow: hidden;
   box-shadow: var(--shadow-light);
-  transition: all 0.4s ease;
-  border: 1px solid transparent; /* Prepare for border on hover */
+  overflow: hidden;
+  transition: all var(--transition-speed) ease;
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .project-card:hover {
   transform: translateY(-10px);
   box-shadow: var(--shadow-medium);
-  border-color: var(--accent-color); /* Accent border on hover */
+  border-color: var(--accent-color);
 }
 
 .project-img {
-  height: 200px;
-  overflow: hidden;
   position: relative;
+  overflow: hidden;
 }
 
 .project-img img {
   width: 100%;
-  height: 100%;
+  height: 200px;
   object-fit: cover;
   transition: all 0.5s ease;
 }
 
 .project-card:hover .project-img img {
-  transform: scale(1.08); /* Slightly more zoom on hover */
-}
-
-.project-img::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent 50%); /* Darker gradient overlay */
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.project-card:hover .project-img::after {
-    opacity: 1;
+  transform: scale(1.05);
 }
 
 .project-content {
@@ -548,29 +531,18 @@ section h2:hover span::after {
 }
 
 .project-content h3 {
-  color: var(--secondary-color);
   margin-bottom: 1rem;
+  color: var(--secondary-color);
 }
 
 .project-details {
-  list-style: none;
+  padding-left: 1.5rem;
   margin-bottom: 1.5rem;
+  color: var(--text-color-light-bg);
 }
 
 .project-details li {
-  position: relative;
-  padding-left: 1.5rem;
-  margin-bottom: 0.8rem;
-  color: var(--text-color-light-bg);
-  font-size: 0.95rem;
-}
-
-.project-details li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: var(--primary-color);
-  font-weight: bold;
+  margin-bottom: 0.5rem;
 }
 
 .project-links {
@@ -580,138 +552,101 @@ section h2:hover span::after {
 }
 
 .project-link {
-  color: var(--primary-color);
-  font-weight: 500;
-  font-size: 0.9rem;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.5rem;
+  background: var(--primary-color);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
   transition: all var(--transition-speed) ease;
-  padding: 0.3rem 0;
-  border-bottom: 1px solid transparent; /* For underline effect */
 }
 
 .project-link:hover {
-  color: var(--accent-color);
-  border-color: var(--accent-color); /* Underline on hover */
-}
-
-.project-link i {
-  font-size: 0.8rem;
+  background: var(--accent-color);
+  transform: translateY(-2px);
 }
 
 /* Publications Section */
 .publications {
-  background: #f9fafc;
-  padding: 4rem 0;
+  background: var(--light-color);
 }
 
 .publications-container {
-  max-width: 1100px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 0 1rem;
 }
 
 .publication-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 2rem;
   display: grid;
-  grid-template-columns: auto 1fr;
-  box-shadow: var(--shadow-light);
+  grid-template-columns: 100px 1fr;
   gap: 2rem;
-  align-items: flex-start;
-  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
+  background: #fff;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  transition: all var(--transition-speed) ease;
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .publication-card:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-medium), 0 0 10px rgba(192, 108, 132, 0.2); /* Accent shadow on hover */
+  box-shadow: var(--shadow-medium);
+  border-color: var(--accent-color);
 }
 
 .pub-left {
-  text-align: center;
-  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
 }
 
 .publication-icon {
   font-size: 2.5rem;
   color: var(--primary-color);
-  margin-bottom: 10px;
-  transition: transform 0.3s ease;
+  transition: color 0.3s ease;
 }
 
 .publication-card:hover .publication-icon {
-    transform: scale(1.1); /* Icon slightly grows */
+  color: var(--accent-color);
 }
 
 .conference-badge {
-  margin-top: 10px;
   background: var(--primary-color);
   color: #fff;
-  padding: 4px 10px;
-  border-radius: 5px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  text-align: center;
   transition: background-color 0.3s ease;
 }
 
 .publication-card:hover .conference-badge {
-    background-color: var(--accent-color); /* Accent color for badge on hover */
+  background: var(--accent-color);
 }
 
-.pub-right {
-  min-width: 0;
-}
-
-.pub-title {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
+.pub-right h3 {
+  margin-bottom: 0.5rem;
   color: var(--secondary-color);
-  line-height: 1.3;
 }
 
 .pub-authors {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--text-light);
-  margin-bottom: 12px;
+  margin-bottom: 1rem;
 }
 
 .pub-abstract {
-  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
   color: var(--text-color-light-bg);
-  line-height: 1.6;
-  margin-bottom: 20px;
 }
 
 .publication-links {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-}
-
-.publication-links .btn {
-  background-color: var(--primary-color);
-  color: #fff;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.9rem;
-}
-
-.publication-links .btn:hover {
-  background-color: #234E7B;
-}
-
-.publication-links .btn-outline {
-  background-color: transparent;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-}
-
-.publication-links .btn-outline:hover {
-  background-color: var(--primary-color);
-  color: #fff;
 }
 
 /* Skills Section */
@@ -721,8 +656,10 @@ section h2:hover span::after {
 
 .skills-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .skill-category {
@@ -732,56 +669,37 @@ section h2:hover span::after {
   box-shadow: var(--shadow-light);
   transition: all var(--transition-speed) ease;
   text-align: center;
-  border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
 }
 
 .skill-category:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-medium), 0 0 10px rgba(44, 95, 143, 0.2); /* Primary shadow on hover */
+  box-shadow: var(--shadow-medium);
 }
 
 .skill-icon {
-  width: 70px;
-  height: 70px;
-  background: rgba(44, 95, 143, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
+  font-size: 2.5rem;
   color: var(--primary-color);
-  font-size: 1.8rem;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
 }
 
 .skill-category:hover .skill-icon {
-    background: var(--accent-color); /* Accent background on hover */
-    color: #fff;
+  color: var(--accent-color);
 }
 
 .skill-category h3 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--secondary-color);
 }
 
 .skill-category ul {
   list-style: none;
-  text-align: left;
-  padding-left: 0;
+  padding: 0;
 }
 
 .skill-category li {
-  margin-bottom: 0.8rem;
-  position: relative;
-  padding-left: 1.8rem;
+  margin-bottom: 0.5rem;
   color: var(--text-color-light-bg);
-}
-
-.skill-category li::before {
-  content: "▹";
-  position: absolute;
-  left: 0;
-  color: var(--primary-color);
 }
 
 /* Experience Section */
@@ -843,7 +761,6 @@ section h2:hover span::after {
     background-color: var(--accent-color);
     box-shadow: 0 0 0 3px var(--accent-color);
 }
-
 
 .timeline-header {
   display: flex;
@@ -1130,18 +1047,6 @@ footer {
   }
   
   /* Mobile Menu Styles */
-.mobile-menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    z-index: 1001;
-}
-
-@media (max-width: 768px) {
   .mobile-menu-toggle {
     display: flex;
     align-items: center;
@@ -1178,7 +1083,7 @@ footer {
     padding: 1rem 2rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
-}
+  
   /* About Section Mobile */
   .about-content {
     text-align: center;
@@ -1327,4 +1232,55 @@ footer {
   .scroll-down {
     animation: none;
   }
+}
+
+/* Achievements Section */
+.achievements {
+  background: #fff;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.achievement-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  transition: all var(--transition-speed) ease;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.achievement-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-medium), 0 0 10px rgba(192, 108, 132, 0.2);
+}
+
+.achievement-icon {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.achievement-card:hover .achievement-icon {
+  color: var(--accent-color);
+}
+
+.achievement-card h3 {
+  margin-bottom: 0.5rem;
+  color: var(--secondary-color);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.achievement-card p {
+  color: var(--text-light);
+  font-size: 0.95rem;
 }
