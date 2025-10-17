@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 4. ANIMATION ON SCROLL
     // =============================================
     const animatedElements = document.querySelectorAll(
-        'section, .skill-category, .project-card, .timeline-item, .certification-card, .publication-card'
+        'section, .skill-category, .project-card, .timeline-item, .certification-card, .publication-card, .achievement-card'
     );
     
     const observer = new IntersectionObserver((entries) => {
