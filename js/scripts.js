@@ -227,6 +227,94 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.add('loaded');
         initParticleNetworkAnimation(); // Initialize the particle network animation on load
     });
+
+    // =============================================
+    // 9. AI TERMINAL
+    // =============================================
+    function initAITerminal() {
+        const terminalToggle = document.getElementById('terminal-toggle');
+        const terminal = document.getElementById('ai-terminal');
+        const terminalOutput = document.getElementById('terminal-output');
+        const terminalInput = document.getElementById('terminal-input');
+        const closeBtn = terminal.querySelector('.close');
+        if (!terminalToggle || !terminal || !terminalOutput || !terminalInput || !closeBtn) return;
+
+        // Boot sequence messages
+        const bootMessages = [
+            'Initializing portfolio_v3.2...',
+            'Loading neural weights...',
+            'Fetching projects from memory...',
+            'System ready. Welcome, user.'
+        ];
+
+        // Display boot sequence
+        let messageIndex = 0;
+        function displayBootMessage() {
+            if (messageIndex < bootMessages.length) {
+                const p = document.createElement('p');
+                p.textContent = `> ${bootMessages[messageIndex]}`;
+                p.style.animationDelay = `${messageIndex * 0.5}s`; // Staggered animation
+                terminalOutput.appendChild(p);
+                terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll
+                messageIndex++;
+                setTimeout(displayBootMessage, 500); // Delay between messages
+            } else {
+                terminalInput.disabled = false; // Enable input after boot
+                terminalInput.focus();
+            }
+        }
+
+        // Command handling
+        const commands = {
+            help: 'Available commands: projects, skills, contact, about, clear',
+            projects: 'Projects: Vigilix (Network IDS), IntelliTube (YouTube Insights), ScriptSense (Personality Prediction). <a href="#projects">View details</a>',
+            skills: 'Skills: Python, TensorFlow, PyTorch, Docker, etc. <a href="#skills">See full list</a>',
+            contact: 'Email: <a href="mailto:sayedathar242@gmail.com">sayedathar242@gmail.com</a>',
+            about: 'AI/ML Engineer pursuing M.Tech at NMIMS. <a href="#about">Read more</a>',
+            clear: () => {
+                terminalOutput.innerHTML = '';
+                return 'Terminal cleared.';
+            }
+        };
+
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !terminalInput.disabled) {
+                const input = terminalInput.value.trim().toLowerCase();
+                terminalInput.value = '';
+                const p = document.createElement('p');
+                p.innerHTML = `> ${input}`;
+                terminalOutput.appendChild(p);
+
+                if (input in commands) {
+                    const response = typeof commands[input] === 'function' ? commands[input]() : commands[input];
+                    const responseP = document.createElement('p');
+                    responseP.innerHTML = response;
+                    terminalOutput.appendChild(responseP);
+                } else {
+                    const errorP = document.createElement('p');
+                    errorP.textContent = `> Command "${input}" not found. Type "help" for options.`;
+                    terminalOutput.appendChild(errorP);
+                }
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        });
+
+        // Toggle terminal
+        function toggleTerminal() {
+            terminal.classList.toggle('active');
+            if (terminal.classList.contains('active')) {
+                if (terminalOutput.innerHTML === '') { // Start boot only if not already booted
+                    displayBootMessage();
+                }
+                terminalInput.focus();
+            }
+        }
+
+        terminalToggle.addEventListener('click', toggleTerminal);
+        closeBtn.addEventListener('click', toggleTerminal);
+    }
+
+    initAITerminal();
 });
 
 // =============================================
@@ -433,12 +521,6 @@ function initParticleNetworkAnimation() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         particles.forEach(particle => {
-            // Re-assign speed based on current particleSpeedMultiplier
-            // This is important if speed changes on resize.
-            // Only update if speedMultiplier changes, otherwise it will be jittery.
-            // More robust would be to recalculate speed on construction/reset.
-            // For this continuous loop, it's better to manage speed in Particle constructor
-            // and re-instantiate particles on resize (which we are already doing).
             particle.update();
             particle.draw();
         });
