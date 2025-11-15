@@ -13,37 +13,24 @@
 </head>
 <body>
     <header>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#achievements">Achievements</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#experience">Experience</a></li>
-                <li><a href="#certifications">Certifications</a></li>
-            </ul>
-        </nav>
+        <div class="nav-container">
+            <a href="#home" class="logo">Athar Sayed</a>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#achievements">Achievements</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#experience">Experience</a></li>
+                    <li><a href="#certifications">Certifications</a></li>
+                </ul>
+            </nav>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
     </header>
-    <header>
-    <div class="nav-container">
-        <a href="#home" class="logo">Athar Sayed</a>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#achievements">Achievements</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#experience">Experience</a></li>
-                <li><a href="#certifications">Certifications</a></li>
-            </ul>
-        </nav>
-        <button class="mobile-menu-toggle" aria-label="Toggle menu">
-            <i class="fas fa-bars"></i>
-        </button>
-    </div>
-</header>
 
     <section id="home" class="hero">
         <canvas id="hero-background-canvas"></canvas>
@@ -195,6 +182,7 @@
             </div>
         </div>
     </section>
+
     <section id="publications" class="publications">
         <h2><span>Publications</span></h2>
         <div class="publications-container">
@@ -226,6 +214,7 @@
         </div>
     </section>
 
+    <!-- UPDATED ACHIEVEMENTS SECTION -->
     <section id="achievements" class="achievements">
         <h2><span>Achievements</span></h2>
         <div class="achievements-grid">
@@ -250,6 +239,14 @@
                 <h3>5</h3>
                 <p>Pull Requests Merged</p>
             </div>
+            <!-- NEW ACHIEVEMENT -->
+            <div class="achievement-card">
+                <div class="achievement-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>100+</h3>
+                <p>LeetCode Problems Solved</p>
+            </div>
         </div>
     </section>
 
@@ -263,9 +260,8 @@
                 <h3>Programming & Analytics</h3>
                 <ul>
                     <li>Python </li>
-                    <li>C++ & C</li>
-                    <li>Data Structures & Algorithms</li>
-                    <li>Pandas, NumPy, Apache Spark</li>
+                    <li>C++, C</li>
+                    <li>DSA</li>
                 </ul>
             </div>
             
@@ -275,11 +271,9 @@
                 </div>
                 <h3>AI & Machine Learning</h3>
                 <ul>
-                    <li>TensorFlow, PyTorch, Keras</li>
-                    <li>Scikit-Learn, OpenCV</li>
-                    <li>LangChain, OpenAI API</li>
-                    <li>LLM, Vertex AI, Gemini</li>
-                    <li>Gradio, Streamlit</li>
+                    <li>TensorFlow, PyTorch</li>
+                    <li>OpenCV, Keras</li>
+                    <li>YOLO (Object Detection)</li>
                 </ul>
             </div>
             
@@ -287,17 +281,27 @@
                 <div class="skill-icon">
                     <i class="fas fa-tools"></i>
                 </div>
-                <h3>Tools & DevOps</h3>
+                <h3>DevOps & MlOps</h3>
                 <ul>
                     <li>Docker, Kubernetes</li>
                     <li>Git, GitLab, CI/CD</li>
-                    <li>Postman, JMeter</li>
-                    <li>Pytest,GoogleTest,JUnitTest</li>
+                    <li>GitHub Actions,Jenkins</li>
                     <li>Prometheus, Grafana</li>
-                    <li>Hugging Face Transformers</li>
                 </ul>
             </div>
-            
+                <!-- LLM/Agentic AI Frameworks -->
+            <div class="skill-category">
+                <div class="skill-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3>LLM & Agentic AI Frameworks</h3>
+                <ul>
+                    <li>LangChain</li>
+                    <li>RAG (Retrieval-Augmented Generation)</li>
+                    <li>Agentic AI Workflows</li>
+                    <li>Model Context Protocol (MCP)</li>
+                </ul>
+            </div>
             <div class="skill-category">
                 <div class="skill-icon">
                     <i class="fas fa-database"></i>
@@ -309,7 +313,6 @@
                     <li>MySQL</li>
                 </ul>
             </div>
-            
         </div>
     </section>
 
@@ -351,6 +354,7 @@
         </div>
     </section>
 
+    <!-- UPDATED CERTIFICATIONS SECTION -->
     <section id="certifications" class="certifications">
         <h2><span>Certifications</span></h2>
         <div class="certifications-grid">
@@ -397,6 +401,14 @@
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/512px-Oracle_logo.svg.png" alt="Oracle Logo" style="width: 100px; height: auto;">
                 </div>
                 <h3>Oracle Cloud Infrastructure 2025 Certified AI Foundations Associate</h3>
+                <p>Oracle</p>
+            </div>
+            <!-- NEW CERTIFICATION -->
+            <div class="certification-card">
+                <div class="certification-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/512px-Oracle_logo.svg.png" alt="Oracle Logo" style="width: 100px; height: auto;">
+                </div>
+                <h3>Oracle Cloud Infrastructure 2025 Certified Generative AI Professional</h3>
                 <p>Oracle</p>
             </div>
         </div>
