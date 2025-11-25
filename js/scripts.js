@@ -400,6 +400,149 @@ function safeQueryAll(selector) {
         return [];
     }
 }
+// ---------- Blog fetch & render (Medium RSS) ----------
+(async function initMediumBlogSection(){
+  const BLOG_USERNAME = 'YOUR_MEDIUM_USERNAME'; // <-- set this to your Medium username (no @)
+  const MAX_POSTS = 6;
+  const blogGrid = document.getElementById('blog-grid');
+  const fallback = document.getElementById('blog-fallback');
+
+  if (!blogGrid) return;
+
+  // Helpers
+  function createCard({title, link, pubDate, excerpt, thumbnail}) {
+    const a = document.createElement('a');
+    a.href = link;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.className = 'blog-card-link';
+
+    const card = document.createElement('article');
+    card.className = 'blog-card';
+
+    if (thumbnail) {
+      const img = document.createElement('img');
+      img.src = thumbnail;
+      img.alt = title;
+      img.className = 'blog-thumb';
+      card.appendChild(img);
+    }
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'title';
+    titleEl.textContent = title;
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = new Date(pubDate).toLocaleDateString();
+
+    const excerptEl = document.createElement('p');
+    excerptEl.className = 'excerpt';
+    excerptEl.innerHTML = excerpt || '';
+
+    card.appendChild(titleEl);
+    card.appendChild(meta);
+    card.appendChild(excerptEl);
+
+    a.appendChild(card);
+    return a;
+  }
+
+  // Strategy: try rss2json API (simple); fallback to AllOrigins + parse RSS
+  async function fetchViaRss2Json(rssUrl) {
+    // rss2json public endpoint - note: rate limits may apply for heavy usage
+    const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('rss2json failed');
+    return res.json();
+  }
+
+  async function fetchViaAllOrigins(rssUrl) {
+    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('allorigins failed');
+    const text = await res.text();
+    // parse XML
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'application/xml');
+    return xml;
+  }
+
+  try {
+    const rssUrl = `https://medium.com/feed/@${BLOG_USERNAME}`; // Medium RSS
+    // Try rss2json first
+    let data = await fetchViaRss2Json(rssUrl);
+
+    if (data && data.items) {
+      // Render items
+      blogGrid.innerHTML = '';
+      data.items.slice(0, MAX_POSTS).forEach(item => {
+        const thumbnail = item.thumbnail || parseThumbnailFromContent(item.content);
+        const card = createCard({
+          title: item.title,
+          link: item.link,
+          pubDate: item.pubDate || item.pubDate,
+          excerpt: item.description || stripHtml(item.content).slice(0, 220) + '...',
+          thumbnail
+        });
+        blogGrid.appendChild(card);
+      });
+      return;
+    }
+    throw new Error('rss2json returned no items');
+  } catch (e) {
+    // fallback path: use AllOrigins + parse RSS manually
+    try {
+      const rssUrl = `https://medium.com/feed/@${BLOG_USERNAME}`;
+      const xml = await fetchViaAllOrigins(rssUrl);
+
+      // parse item nodes
+      const items = Array.from(xml.querySelectorAll('item')).slice(0, MAX_POSTS);
+      if (!items.length) throw new Error('no items parsed');
+
+      blogGrid.innerHTML = '';
+      items.forEach(item => {
+        const title = item.querySelector('title')?.textContent || 'Untitled';
+        const link = item.querySelector('link')?.textContent || '#';
+        const pubDate = item.querySelector('pubDate')?.textContent || '';
+        // some RSS put content:encoded with HTML
+        const contentNode = item.querySelector('content\\:encoded') || item.querySelector('description');
+        const content = contentNode ? contentNode.textContent : '';
+        const excerpt = stripHtml(content).slice(0, 220) + '...';
+        const thumbnail = parseThumbnailFromHtml(content);
+        const card = createCard({ title, link, pubDate, excerpt, thumbnail });
+        blogGrid.appendChild(card);
+      });
+      return;
+    } catch (err) {
+      console.warn('Blog fetch failed:', e, err);
+      // show fallback manual links
+      if (fallback) fallback.hidden = false;
+      return;
+    }
+  }
+
+  // small helpers
+  function stripHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function parseThumbnailFromHtml(html) {
+    try {
+      const div = document.createElement('div');
+      div.innerHTML = html || '';
+      const img = div.querySelector('img');
+      return img ? img.src : null;
+    } catch (e) { return null; }
+  }
+
+  function parseThumbnailFromContent(content) {
+    // rss2json sometimes returns `content` with <img> tags
+    return parseThumbnailFromHtml(content);
+  }
+})();
 
 // =============================================
 // PARTICLE NETWORK BACKGROUND ANIMATION
