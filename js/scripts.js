@@ -313,6 +313,146 @@ document.addEventListener('DOMContentLoaded', function() {
                 return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
             }
 
+            // Determine API base for local dev vs production
+            // If you're serving the frontend with Live Server (127.0.0.1:5500),
+            // point requests to the local Express proxy at http://localhost:5173
+            const API_BASE = (['127.0.0.1', 'localhost'].includes(window.location.hostname) && window.location.port === '5500')
+                ? 'http://localhost:5173'
+                : '';
+
+            // Helper to build the correct API endpoint depending on environment
+            function apiEndpoint(path) {
+                if (API_BASE) return API_BASE + path;
+                return path; // same-origin (useful when deployed to Vercel)
+            }
+            /**
+             * Robustly extract readable text from API response objects.
+             * Returns a short string or null if nothing found.
+             */
+           /**
+ * Robustly extract readable text from API response objects or JSON strings.
+ * - If payload is a JSON string, try to parse it and extract text from parsed object.
+ * - Handles shapes like:
+ *    { reply: "..." }                 (reply can be plain text or a JSON string)
+ *    { text: "..." }
+ *    { content: { parts: [{ text: "..." }] } }   (Gemini-like)
+ *    { choices: [{ message: { content: { parts: [...] } } }] } (OpenAI-like)
+ * - Returns null if no useful readable text found.
+ */
+            function extractModelText(payload) {
+            // small helper to detect JSON-string
+            function looksLikeJsonString(s) {
+                return typeof s === 'string' && s.trim().length > 0 && /^[\[\{]\s*["'A-Za-z0-9]/.test(s.trim());
+            }
+
+            // Try to parse if payload itself is a JSON string
+            if (typeof payload === 'string' && looksLikeJsonString(payload)) {
+                try {
+                const parsed = JSON.parse(payload);
+                const inner = extractModelText(parsed);
+                if (inner) return inner;
+                } catch (e) {
+                // not parseable JSON — continue to return the raw string later if nothing else
+                }
+            }
+
+            // If payload is null/undefined
+            if (payload === null || payload === undefined) return null;
+
+            // If payload is a plain string (non-JSON), return it (trimmed)
+            if (typeof payload === 'string') {
+                const t = payload.trim();
+                return t.length ? t : null;
+            }
+
+            // If payload.reply exists and is a string that itself contains JSON, parse it
+            if (typeof payload.reply === 'string') {
+                const candidate = payload.reply.trim();
+                if (looksLikeJsonString(candidate)) {
+                try {
+                    const parsed = JSON.parse(candidate);
+                    const inner = extractModelText(parsed);
+                    if (inner) return inner;
+                } catch (e) {
+                    // If we can't parse, continue below and only return the raw string as last resort
+                }
+                } else if (candidate.length) {
+                return candidate; // plain text reply (good)
+                }
+            }
+
+            // If payload.text is plain text
+            if (typeof payload.text === 'string' && payload.text.trim()) {
+                return payload.text.trim();
+            }
+
+            // Common Gemini-like shape: payload.content.parts[*].text
+            try {
+                if (payload.content && Array.isArray(payload.content.parts) && payload.content.parts.length) {
+                const txt = payload.content.parts.map(p => (typeof p === 'string' ? p : (p?.text || p?.content || ''))).join('\n\n').trim();
+                if (txt) return txt;
+                }
+            } catch (e) { /* ignore */ }
+
+            // OpenAI-like: choices -> message -> content -> parts
+            try {
+                if (Array.isArray(payload.choices) && payload.choices.length) {
+                for (const c of payload.choices) {
+                    // choices[].message.content.parts
+                    const parts = c?.message?.content?.parts || c?.message?.content || c?.message;
+                    if (Array.isArray(parts) && parts.length) {
+                    const txt = parts.map(p => (typeof p === 'string' ? p : (p?.text || ''))).join('\n\n').trim();
+                    if (txt) return txt;
+                    }
+                    // choices[].text
+                    if (typeof c.text === 'string' && c.text.trim()) return c.text.trim();
+                    // choices[].message?.content as string
+                    if (typeof c?.message?.content === 'string' && c.message.content.trim()) return c.message.content.trim();
+                }
+                }
+            } catch (e) { /* ignore */ }
+
+            // Some APIs nest under `result`, `data`, `response`
+            const altKeys = ['result', 'data', 'response', 'output'];
+            for (const k of altKeys) {
+                if (payload[k]) {
+                const sub = extractModelText(payload[k]);
+                if (sub) return sub;
+                }
+            }
+
+            // Fallback: try to find first reasonably-sized string anywhere (defensive)
+            try {
+                const seen = new Set();
+                function findFirstString(obj) {
+                if (!obj || typeof obj === 'number' || typeof obj === 'boolean') return null;
+                if (typeof obj === 'string') {
+                    const s = obj.trim();
+                    return s.length ? s : null;
+                }
+                if (seen.has(obj)) return null;
+                seen.add(obj);
+                if (Array.isArray(obj)) {
+                    for (const it of obj) {
+                    const s = findFirstString(it);
+                    if (s) return s;
+                    }
+                } else if (typeof obj === 'object') {
+                    for (const key of Object.keys(obj)) {
+                    const s = findFirstString(obj[key]);
+                    if (s) return s;
+                    }
+                }
+                return null;
+                }
+                const found = findFirstString(payload);
+                if (found) return found;
+            } catch (e) { /* ignore */ }
+
+            // Nothing useful found
+            return null;
+            }
+
             // Send message to backend proxy (/api/gemini)
             async function askGemini(userMessage) {
                 convo.history.push({ role: 'user', content: userMessage });
@@ -337,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 convo.pendingRequest = { controller };
 
                 try {
-                    const res = await fetch('/api/gemini', {
+                    const res = await fetch(apiEndpoint('/api/gemini'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
@@ -365,10 +505,30 @@ document.addEventListener('DOMContentLoaded', function() {
                             respPlaceholder.innerHTML += sanitize(chunk);
                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
                         }
-                    } else {
-                        const data = await res.json();
-                        respPlaceholder.innerHTML = sanitize(data.reply || JSON.stringify(data));
-                    }
+                        } else {
+                            // parse JSON safely and extract readable text only
+                            let data;
+                            try {
+                                data = await res.json();
+                            } catch (e) {
+                                // not JSON — show raw text
+                                const txt = await res.text().catch(() => '');
+                                respPlaceholder.innerHTML = sanitize(txt || 'No readable response from server.');
+                                convo.history.push({ role: 'assistant', content: respPlaceholder.innerText || respPlaceholder.textContent });
+                                return;
+                            }
+
+                            // Try to extract a human-readable string
+                            const extracted = extractModelText(data);
+                            if (extracted) {
+                                respPlaceholder.innerHTML = sanitize(extracted);
+                            } else {
+                                // fallback: keep output short and helpful for debugging
+                                const small = JSON.stringify(data).slice(0, 800); // keep it small
+                                respPlaceholder.innerHTML = sanitize(small + (small.length >= 800 ? '... (truncated)' : ''));
+                            }
+                        }
+
 
                     convo.history.push({ role: 'assistant', content: respPlaceholder.innerText || respPlaceholder.textContent });
                 } catch (err) {

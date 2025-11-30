@@ -18,9 +18,24 @@ export default async function handler(req, res) {
   try {
     const { model, prompt, context, history } = req.body || {};
 
+      // Intercept trivial greetings and respond with a concise, third-person hint
+      const normalizedPrompt = (prompt || '').toString().trim().toLowerCase();
+      if (/^(hi|hello|hey|hey there|hello there|good morning|good afternoon|good evening)[.!]?$/i.test(normalizedPrompt)) {
+        return res.status(200).json({ reply: "Hello — ask me about Athar's skills, recent projects, experience, or contact information." });
+      }
+
     function buildRequestBody({ model, prompt, context, history }) {
       const historyText = (history || []).map(h => `${h.role}: ${h.content}`).join('\n');
-      const fullText = [context || '', 'User:', prompt || '', 'Conversation history:', historyText].filter(Boolean).join('\n\n');
+      // Instruction: concise, resume-grounded, plain-text only
+      const systemInstruction = `You are an assistant that answers questions about the user's resume and portfolio. Use ONLY the provided profile context and conversation history to answer. Provide concise, relevant answers: maximum 3 short sentences or up to 3 bullet points. If the answer is not present in the context, reply with "I don't know." Return plain text only — do not wrap the answer in JSON or other markup.`;
+
+      const fullText = [
+        `System Instruction:\n${systemInstruction}`,
+        `Profile Context:\n${context || ''}`,
+        `Conversation history:\n${historyText}`,
+        `User Question:\n${prompt || ''}`
+      ].filter(Boolean).join('\n\n');
+
       return {
         contents: [
           {
@@ -104,7 +119,22 @@ export default async function handler(req, res) {
     }
 
     const data = await r.json();
-    const reply = extractTextFromResponse(data);
+    const raw = extractTextFromResponse(data);
+    // Sanitize final reply similar to server proxy
+    function sanitizeFinalReply(rawText) {
+      if (!rawText) return "I don't know.";
+      let s = String(rawText);
+      s = s.replace(/[\r\n]+/g, ' ');
+      s = s.replace(/[^A-Za-z0-9 \.,!\?\-']/g, '');
+      s = s.replace(/\s{2,}/g, ' ').trim();
+      s = s.replace(/^\s*(hi|hello|hey)[\.,!\s-]*/i, '');
+      const sentences = s.match(/[^.!?]+[.!?]?/g) || [s];
+      const short = sentences.slice(0, 2).join(' ').trim();
+      if (!short) return "I don't know.";
+      return short;
+    }
+
+    const reply = sanitizeFinalReply(raw);
     return res.json({ reply });
   } catch (err) {
     console.error('Vercel function error:', err);

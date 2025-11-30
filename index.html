@@ -493,5 +493,29 @@
     </footer>
 
     <script src="js/scripts.js"></script>
+    <!-- Debug helper: quick toggle handler to verify terminal toggle works locally -->
+    <script>
+        (function(){
+            try {
+                const t = document.getElementById('terminal-toggle');
+                const term = document.getElementById('ai-terminal');
+                if (t && term) {
+                    t.addEventListener('click', function(e){
+                        console.log('terminal-toggle clicked (debug helper)');
+                        term.classList.toggle('active');
+                        const input = document.getElementById('terminal-input');
+                        if (term.classList.contains('active') && input) {
+                            input.disabled = false;
+                            input.focus();
+                        }
+                    });
+                } else {
+                    console.log('Debug: terminal elements not found', !!t, !!term);
+                }
+            } catch (err) {
+                console.error('Debug helper error', err);
+            }
+        })();
+    </script>
 </body>
 </html>

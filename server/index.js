@@ -27,7 +27,15 @@ if (!GEMINI_API_KEY) {
 function buildRequestBody({ model, prompt, context, history }) {
   // Combine context and history into a single user prompt. Keep concise to avoid large payloads.
   const historyText = (history || []).map(h => `${h.role}: ${h.content}`).join('\n');
-  const fullText = [context || '', 'User:', prompt || '', 'Conversation history:', historyText].filter(Boolean).join('\n\n');
+  // Instruction to make responses concise, resume-grounded, and plain-text only
+  const systemInstruction = `You are an assistant that answers questions about the user's resume and portfolio. Use ONLY the provided profile context and conversation history to answer. Provide concise, relevant answers: maximum 3 short sentences or up to 3 bullet points. If the answer is not present in the context, reply with "I don't know." Return plain text only — do not wrap the answer in JSON or other markup.`;
+
+  const fullText = [
+    `System Instruction:\n${systemInstruction}`,
+    `Profile Context:\n${context || ''}`,
+    `Conversation history:\n${historyText}`,
+    `User Question:\n${prompt || ''}`
+  ].filter(Boolean).join('\n\n');
 
   return {
     contents: [
@@ -108,12 +116,42 @@ function extractTextFromResponse(data) {
   }
 }
 
+// Sanitize final reply: strip non-text wrappers, remove unwanted characters,
+// limit to two short sentences, and avoid long greetings.
+function sanitizeFinalReply(raw) {
+  if (!raw) return "I don't know.";
+  // Ensure string
+  let s = String(raw);
+  // Remove common JSON-like wrappers if present
+  s = s.replace(/^[\s\n\r]*\{[\s\S]*?\:[\s\S]*?\}?[\s\n\r]*$/g, match => match);
+  // Replace newlines with spaces
+  s = s.replace(/[\r\n]+/g, ' ');
+  // Remove characters that are not letters, numbers, basic punctuation or spaces
+  s = s.replace(/[^A-Za-z0-9 \.,!\?\-']/g, '');
+  // Collapse multiple spaces
+  s = s.replace(/\s{2,}/g, ' ').trim();
+  // Remove leading casual greetings like "hi", "hello"
+  s = s.replace(/^\s*(hi|hello|hey)[\.,!\s-]*/i, '');
+  // Split into sentences and keep first 2 short sentences
+  const sentences = s.match(/[^.!?]+[.!?]?/g) || [s];
+  const short = sentences.slice(0, 2).join(' ').trim();
+  if (!short) return "I don't know.";
+  return short;
+}
+
 app.post('/api/gemini', async (req, res) => {
   try {
     const { model, prompt, context, history } = req.body || {};
 
     if (!GEMINI_API_KEY) {
       return res.status(500).json({ error: 'Server not configured with GEMINI_API_KEY' });
+    }
+
+    // Intercept trivial greetings and respond with a concise, third-person hint
+    const normalizedPrompt = (prompt || '').toString().trim().toLowerCase();
+    if (/^(hi|hello|hey|hey there|hello there|good morning|good afternoon|good evening)[.!]?$/i.test(normalizedPrompt)) {
+      // Respond as a third-person assistant describing Athar
+      return res.json({ reply: "Hello — ask me about Athar's skills, recent projects, experience, or contact information." });
     }
 
     const downstreamBody = buildRequestBody({ model, prompt, context, history });
@@ -134,7 +172,8 @@ app.post('/api/gemini', async (req, res) => {
     }
 
     const data = await r.json();
-    const reply = extractTextFromResponse(data);
+    const raw = extractTextFromResponse(data);
+    const reply = sanitizeFinalReply(raw);
     return res.json({ reply });
   } catch (err) {
     console.error('Proxy error:', err);
