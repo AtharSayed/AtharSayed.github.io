@@ -35,7 +35,7 @@ Steps:
 1. Push this repository to GitHub (if not already).
 2. In Vercel, create a new project and import this GitHub repository.
 3. In your Vercel project settings -> Environment Variables, add **GEMINI_API_KEY** (your API key) and optionally **GEMINI_API_URL** (if not using default). DO NOT commit your API key to the repo.
-	- Example variable: `GEMINI_API_KEY` = `AIzaSyAEUaAYB0XSLI7-L3GscnTbVOpAcIHiWOo` (paste your key in Vercel UI only)
+	- Example variable: `GEMINI_API_KEY`  
 4. Deploy the project. The serverless endpoint will be available at `https://<your-vercel-domain>/api/gemini`.
 
 Client-side notes:
