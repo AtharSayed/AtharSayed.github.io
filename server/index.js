@@ -54,90 +54,159 @@ function buildRequestBody({ model, prompt, context, history }) {
 // Robust extractor to find readable text in a provider response
 function extractTextFromResponse(data) {
   if (!data) return '';
-  // Google GL `generateContent` often returns `candidates` with `output` or `content` fields
+
+  // Helper: collect all leaf strings in an object/array (avoid keys)
+  function collectStrings(obj, out = []) {
+    if (obj === null || obj === undefined) return out;
+    if (typeof obj === 'string') {
+      const s = obj.trim();
+      if (s) out.push(s);
+      return out;
+    }
+    if (typeof obj === 'number' || typeof obj === 'boolean') {
+      out.push(String(obj));
+      return out;
+    }
+    if (Array.isArray(obj)) {
+      for (const v of obj) collectStrings(v, out);
+      return out;
+    }
+    if (typeof obj === 'object') {
+      for (const k of Object.keys(obj)) collectStrings(obj[k], out);
+      return out;
+    }
+    return out;
+  }
+
   try {
+    // 1) Google GL / Gemini-style: candidates -> content | output
     if (Array.isArray(data.candidates) && data.candidates.length) {
-      // candidates may contain `content` or `output` or nested parts
       const texts = data.candidates.map(cand => {
-        if (typeof cand === 'string') return cand;
+        // cand.content may be array of parts { text }
         if (cand.content) {
-          // content may be array of parts
-          if (Array.isArray(cand.content)) return cand.content.map(p => p.text || p).join(' ');
-          if (typeof cand.content === 'string') return cand.content;
+          if (Array.isArray(cand.content)) {
+            return cand.content
+              .map(p => p?.text ?? (typeof p === 'string' ? p : ''))
+              .filter(Boolean)
+              .join('\n');
+          } else if (typeof cand.content === 'string') {
+            return cand.content;
+          } else if (cand.content.parts && Array.isArray(cand.content.parts)) {
+            return cand.content.parts
+              .map(p => p?.text || '')
+              .filter(Boolean)
+              .join('\n');
+          }
         }
         if (cand.output) {
-          // output could contain `content` array
-          if (cand.output.content && Array.isArray(cand.output.content)) return cand.output.content.map(p => p.text || p).join(' ');
+          if (cand.output.content && Array.isArray(cand.output.content)) {
+            return cand.output.content
+              .map(p => p?.text || '')
+              .filter(Boolean)
+              .join('\n');
+          }
           if (typeof cand.output === 'string') return cand.output;
         }
-        // fallback stringify candidate
-        return JSON.stringify(cand);
-      });
-      return texts.join('\n\n');
+        if (typeof cand === 'string') return cand;
+
+        const leafs = collectStrings(cand);
+        return leafs.join('\n');
+      }).filter(Boolean);
+
+      if (texts.length) return texts.join('\n\n');
     }
 
-    // Some responses place text in output[0].content[0].text or similar
-    if (data.output && Array.isArray(data.output)) {
-      const outTexts = data.output.map(o => {
-        if (o.content && Array.isArray(o.content)) return o.content.map(c => c.text || JSON.stringify(c)).join(' ');
-        return JSON.stringify(o);
-      });
-      return outTexts.join('\n\n');
-    }
-
-    // Try common simple fields
-    if (data.reply) return data.reply;
-    if (data.output?.text) return data.output.text;
-
-    // As a last resort, try to find the first string anywhere in the JSON
-    const seen = new Set();
-    function findString(obj) {
-      if (!obj || typeof obj === 'number' || typeof obj === 'boolean') return null;
-      if (typeof obj === 'string') return obj;
-      if (seen.has(obj)) return null;
-      seen.add(obj);
-      if (Array.isArray(obj)) {
-        for (const v of obj) {
-          const s = findString(v);
-          if (s) return s;
+    // 2) Old-style output array: output[].content[].text
+    if (Array.isArray(data.output) && data.output.length) {
+      const out = data.output.map(o => {
+        if (o.content && Array.isArray(o.content)) {
+          return o.content
+            .map(c => c?.text ?? (typeof c === 'string' ? c : ''))
+            .filter(Boolean)
+            .join('\n');
         }
-      } else if (typeof obj === 'object') {
-        for (const k of Object.keys(obj)) {
-          const s = findString(obj[k]);
-          if (s) return s;
+        return '';
+      }).filter(Boolean);
+      if (out.length) return out.join('\n\n');
+    }
+
+    // 3) Gemini-like: data.content.parts[*].text
+    if (data.content && Array.isArray(data.content.parts)) {
+      const txt = data.content.parts
+        .map(p => p?.text ?? '')
+        .filter(Boolean)
+        .join('\n');
+      if (txt) return txt;
+    }
+
+    // 4) OpenAI-like: choices[].message.content.parts or choices[].text
+    if (Array.isArray(data.choices) && data.choices.length) {
+      for (const c of data.choices) {
+        const parts = c?.message?.content?.parts || c?.message?.content;
+        if (Array.isArray(parts) && parts.length) {
+          const txt = parts
+            .map(p => (typeof p === 'string' ? p : (p?.text || '')))
+            .filter(Boolean)
+            .join('\n\n');
+          if (txt) return txt;
+        }
+        if (typeof c.text === 'string' && c.text.trim()) return c.text.trim();
+        if (typeof c?.message?.content === 'string' && c.message.content.trim()) {
+          return c.message.content.trim();
         }
       }
-      return null;
     }
-    const found = findString(data);
-    return found || JSON.stringify(data);
+
+    // 5) Simple fields
+    if (typeof data.reply === 'string' && data.reply.trim()) return data.reply.trim();
+    if (typeof data.text === 'string' && data.text.trim()) return data.text.trim();
+    if (typeof data.output?.text === 'string' && data.output.text.trim()) return data.output.text.trim();
+
+    // 6) FINAL fallback: leaf strings (not JSON.stringify)
+    const leaves = collectStrings(data);
+    if (leaves.length) {
+      return leaves.join('\n').trim();
+    }
+
+    // Last resort
+    return typeof data === 'string' ? data : JSON.stringify(data);
   } catch (e) {
-    return JSON.stringify(data);
+    return typeof data === 'string' ? data : JSON.stringify(data);
   }
 }
 
-// Sanitize final reply: strip non-text wrappers, remove unwanted characters,
-// limit to two short sentences, and avoid long greetings.
-function sanitizeFinalReply(raw) {
-  if (!raw) return "I don't know.";
-  // Ensure string
-  let s = String(raw);
-  // Remove common JSON-like wrappers if present
-  s = s.replace(/^[\s\n\r]*\{[\s\S]*?\:[\s\S]*?\}?[\s\n\r]*$/g, match => match);
-  // Replace newlines with spaces
-  s = s.replace(/[\r\n]+/g, ' ');
-  // Remove characters that are not letters, numbers, basic punctuation or spaces
-  s = s.replace(/[^A-Za-z0-9 \.,!\?\-']/g, '');
-  // Collapse multiple spaces
-  s = s.replace(/\s{2,}/g, ' ').trim();
-  // Remove leading casual greetings like "hi", "hello"
-  s = s.replace(/^\s*(hi|hello|hey)[\.,!\s-]*/i, '');
-  // Split into sentences and keep first 2 short sentences
+
+// Sanitize final reply but keep punctuation & line breaks
+function sanitizeFinalReply(rawText) {
+  if (!rawText) return "I don't know.";
+
+  let s = String(rawText);
+
+  // 1) Normalize line endings
+  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+
+  // 2) Collapse multiple blank lines
+  s = s.replace(/\n{2,}/g, '\n\n');
+
+  // 3) Keep punctuation & newlines, drop control chars
+  s = s.replace(/[^\x20-\x7E\n]/g, ' ');
+
+  // 4) Collapse extra whitespace but keep sentence structure
+  s = s.replace(/[ \t]{2,}/g, ' ').replace(/\s{2,}/g, ' ').trim();
+
+  // 5) Remove leading greetings
+  s = s.replace(/^\s*(hi|hello|hey|greetings)[\.,!\s-]+/i, '');
+
+  // 6) Limit to first 3 sentences or ~450 chars
   const sentences = s.match(/[^.!?]+[.!?]?/g) || [s];
-  const short = sentences.slice(0, 2).join(' ').trim();
-  if (!short) return "I don't know.";
-  return short;
+  const selected = sentences.slice(0, 3).join(' ').trim();
+  const result = selected.length
+    ? selected
+    : (s.length > 450 ? s.slice(0, 450).trim() + '...' : s);
+
+  return result || "I don't know.";
 }
+
 
 app.post('/api/gemini', async (req, res) => {
   try {
