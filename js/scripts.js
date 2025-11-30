@@ -276,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return 'Terminal cleared.';
             }
         };
+        
 
         terminalInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !terminalInput.disabled) {
@@ -298,6 +299,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
         });
+
+    // =============================================
+    // 10. HERO TEXT ANIMATION ON VIEW
+    // =============================================
+    const heroSection = document.querySelector('.hero');
+    const animatedWords = document.querySelectorAll('.animate-word');
+
+    if (heroSection && animatedWords.length > 0) {
+        const triggerHeroAnimation = () => {
+            animatedWords.forEach(word => {
+                word.style.animation = 'none';
+                word.offsetHeight; // Trigger reflow
+                word.style.animation = null; // Re-apply original animation
+            });
+        };
+
+        const heroObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    triggerHeroAnimation();
+                    heroObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        heroObserver.observe(heroSection);
+    }
 
         // Toggle terminal
         function toggleTerminal() {

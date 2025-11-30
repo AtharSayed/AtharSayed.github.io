@@ -335,6 +335,85 @@ nav ul li a:hover {
   50% { transform: translateY(-10px) translateX(-50%); }
 }
 
+/* ============================================= */
+/* TEXT REVEAL ANIMATION - "Hi, I'm Athar Sayed" */
+/* ============================================= */
+
+.hero-content h1 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.animate-word {
+    opacity: 0;
+    transform: translateY(30px);
+    display: inline-block;
+    animation: fadeInUp 0.8s ease-out forwards;
+    will-change: transform, opacity;
+}
+
+/* Sequential delays */
+.hero-content h1 .animate-word:nth-child(1) { animation-delay: 0.3s; }
+.hero-content h1 .animate-word:nth-child(2) { animation-delay: 0.6s; }
+.hero-content h1 .animate-word:nth-child(3) { animation-delay: 0.9s; }
+.hero-content h1 .animate-word:nth-child(4) { animation-delay: 1.2s; }
+
+/* Highlighted name keeps gradient */
+.hero-content h1 .highlight {
+    background: linear-gradient(90deg, #ffffff, var(--highlight-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+}
+
+/* Keyframe animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .animate-word {
+        animation: none !important;
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Optional: Add slight bounce to the last word for emphasis */
+.hero-content h1 .animate-word:nth-child(4) {
+    animation: fadeInUpBounce 1s ease-out 1.2s forwards;
+}
+
+@keyframes fadeInUpBounce {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Terminal Toggle Icon */
 .terminal-toggle {
   position: fixed;
