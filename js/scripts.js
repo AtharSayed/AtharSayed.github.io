@@ -282,14 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return p;
             }
 
-            // Boot messages
-            const bootMessages = [
-                'Initializing portfolio_v3.2...',
-                'Loading neural weights...',
-                'Fetching projects from memory...',
-                'System ready. Welcome, user.'
-            ];
-
             let messageIndex = 0;
             function displayBootMessage() {
                 if (messageIndex < bootMessages.length) {
@@ -567,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 clear: () => {
                     terminalOutput.innerHTML = '';
-                    return 'Terminal cleared.';
+                    return ' ';
                 },
                 stop: () => {
                     if (convo.pendingRequest && convo.pendingRequest.controller) {
