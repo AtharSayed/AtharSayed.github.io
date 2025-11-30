@@ -240,69 +240,220 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!terminalToggle || !terminal || !terminalOutput || !terminalInput || !closeBtn) return;
 
         // Boot sequence messages
-        const bootMessages = [
-            'Initializing portfolio_v3.2...',
-            'Loading neural weights...',
-            'Fetching projects from memory...',
-            'System ready. Welcome, user.'
-        ];
+        function initAITerminal() {
+            const terminalToggle = document.getElementById('terminal-toggle');
+            const terminal = document.getElementById('ai-terminal');
+            const terminalOutput = document.getElementById('terminal-output');
+            const terminalInput = document.getElementById('terminal-input');
+            const closeBtn = terminal?.querySelector('.close');
+            if (!terminalToggle || !terminal || !terminalOutput || !terminalInput) return;
 
-        // Display boot sequence
-        let messageIndex = 0;
-        function displayBootMessage() {
-            if (messageIndex < bootMessages.length) {
-                const p = document.createElement('p');
-                p.textContent = `> ${bootMessages[messageIndex]}`;
-                p.style.animationDelay = `${messageIndex * 0.5}s`; // Staggered animation
-                terminalOutput.appendChild(p);
-                terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll
-                messageIndex++;
-                setTimeout(displayBootMessage, 500); // Delay between messages
-            } else {
-                terminalInput.disabled = false; // Enable input after boot
-                terminalInput.focus();
+            // Conversation state and pending request controller
+            const convo = {
+                history: [], // {role: 'user'|'assistant', content: '...'}
+                booted: false,
+                pendingRequest: null
+            };
+
+            // Gather short profile context from visible page content to ground replies
+            function gatherProfileContext() {
+                try {
+                    const about = document.querySelector('#about .about-text')?.innerText || '';
+                    const projects = Array.from(document.querySelectorAll('#projects .project-card h3'))
+                        .map(h => h.innerText).join(' · ');
+                    const skills = Array.from(document.querySelectorAll('#skills .skill-category h3'))
+                        .map(h => h.innerText).join(' · ');
+                    const experience = Array.from(document.querySelectorAll('#experience .timeline-item h3'))
+                        .map(h => h.innerText).join(' · ');
+                    return `Profile context:\nAbout: ${about}\nProjects: ${projects}\nSkills: ${skills}\nExperience: ${experience}`;
+                } catch (e) {
+                    return '';
+                }
             }
+
+            // Append line to terminal output
+            function appendLine(text, kind = 'system') {
+                const p = document.createElement('p');
+                p.className = `terminal-line ${kind}`;
+                p.innerHTML = text;
+                terminalOutput.appendChild(p);
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                return p;
+            }
+
+            // Boot messages
+            const bootMessages = [
+                'Initializing portfolio_v3.2...',
+                'Loading neural weights...',
+                'Fetching projects from memory...',
+                'System ready. Welcome, user.'
+            ];
+
+            let messageIndex = 0;
+            function displayBootMessage() {
+                if (messageIndex < bootMessages.length) {
+                    const p = document.createElement('p');
+                    p.textContent = `> ${bootMessages[messageIndex]}`;
+                    p.style.animationDelay = `${messageIndex * 0.5}s`;
+                    terminalOutput.appendChild(p);
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                    messageIndex++;
+                    setTimeout(displayBootMessage, 500);
+                } else {
+                    terminalInput.disabled = false;
+                    terminalInput.focus();
+                    convo.booted = true;
+                    appendLine('Type "help" for sample commands or ask anything about this profile.', 'system');
+                }
+            }
+
+            // Basic sanitizer to avoid injecting raw HTML
+            function sanitize(str) {
+                const s = String(str || '');
+                return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+            }
+
+            // Send message to backend proxy (/api/gemini)
+            async function askGemini(userMessage) {
+                convo.history.push({ role: 'user', content: userMessage });
+
+                const trimmedHistory = convo.history.slice(-8);
+                const profileContext = gatherProfileContext();
+
+                const payload = {
+                    model: 'gemini-2.5',
+                    prompt: userMessage,
+                    context: profileContext,
+                    history: trimmedHistory
+                };
+
+                const respPlaceholder = appendLine('> Thinking...', 'assistant');
+                respPlaceholder.classList.add('typing');
+
+                if (convo.pendingRequest && convo.pendingRequest.controller) {
+                    convo.pendingRequest.controller.abort();
+                }
+                const controller = new AbortController();
+                convo.pendingRequest = { controller };
+
+                try {
+                    const res = await fetch('/api/gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
+                    });
+
+                    if (!res.ok) {
+                        const txt = await res.text();
+                        respPlaceholder.remove();
+                        appendLine(`> Error from server: ${res.status} ${sanitize(txt)}`, 'error');
+                        return;
+                    }
+
+                    const contentType = res.headers.get('content-type') || '';
+                    if (contentType.includes('text/event-stream') || contentType.includes('stream')) {
+                        const reader = res.body.getReader();
+                        const decoder = new TextDecoder();
+                        respPlaceholder.innerHTML = '';
+                        respPlaceholder.classList.remove('typing');
+
+                        while (true) {
+                            const { value, done } = await reader.read();
+                            if (done) break;
+                            const chunk = decoder.decode(value, { stream: true });
+                            respPlaceholder.innerHTML += sanitize(chunk);
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        }
+                    } else {
+                        const data = await res.json();
+                        respPlaceholder.innerHTML = sanitize(data.reply || JSON.stringify(data));
+                    }
+
+                    convo.history.push({ role: 'assistant', content: respPlaceholder.innerText || respPlaceholder.textContent });
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        appendLine('> Request aborted.', 'system');
+                    } else {
+                        appendLine(`> Network or server error: ${sanitize(err.message)}`, 'error');
+                    }
+                } finally {
+                    convo.pendingRequest = null;
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }
+            }
+
+            // Local commands fallback
+            const localCommands = {
+                help: () => {
+                    return [
+                        'Available commands: help, projects, skills, contact, about, clear, stop',
+                        'You can also type any question about the profile (e.g., "Tell me about Athar\'s projects").'
+                    ].join('<br>');
+                },
+                projects: () => {
+                    const nodes = Array.from(document.querySelectorAll('#projects .project-card'));
+                    if (!nodes.length) return 'No project details found on the page.';
+                    return nodes.map(n => n.querySelector('h3')?.innerText || '').join('<br>');
+                },
+                skills: () => {
+                    return gatherProfileContext().split('\n').find(l => l.startsWith('Skills')) || 'Skills info not found.';
+                },
+                contact: () => {
+                    return 'Email: <a href="mailto:sayedathar242@gmail.com">sayedathar242@gmail.com</a>';
+                },
+                about: () => {
+                    return document.querySelector('#about .about-text')?.innerText || 'About section not found.';
+                },
+                clear: () => {
+                    terminalOutput.innerHTML = '';
+                    return 'Terminal cleared.';
+                },
+                stop: () => {
+                    if (convo.pendingRequest && convo.pendingRequest.controller) {
+                        convo.pendingRequest.controller.abort();
+                        return 'Stopping current request...';
+                    }
+                    return 'No request in progress.';
+                }
+            };
+
+            terminalInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !terminalInput.disabled) {
+                    const input = terminalInput.value.trim();
+                    if (!input) return;
+                    terminalInput.value = '';
+                    appendLine(`> ${sanitize(input)}`, 'user');
+
+                    const key = input.toLowerCase();
+                    if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
+                        const out = localCommands[key]();
+                        appendLine(out, 'system');
+                        return;
+                    }
+
+                    askGemini(input);
+                }
+            });
+
+            function toggleTerminal() {
+                terminal.classList.toggle('active');
+                if (terminal.classList.contains('active')) {
+                    if (!convo.booted) {
+                        displayBootMessage();
+                    } else {
+                        terminalInput.focus();
+                    }
+                } else {
+                    terminalInput.blur();
+                }
+            }
+
+            terminalToggle.addEventListener('click', toggleTerminal);
+            if (closeBtn) closeBtn.addEventListener('click', toggleTerminal);
         }
 
-        // Command handling
-        const commands = {
-            help: 'Available commands: projects, skills, contact, about, clear',
-            projects: 'Projects: Vigilix (Network IDS), IntelliTube (YouTube Insights), ScriptSense (Personality Prediction). <a href="#projects">View details</a>',
-            skills: 'Skills: Python, TensorFlow, PyTorch, Docker, etc. <a href="#skills">See full list</a>',
-            contact: 'Email: <a href="mailto:sayedathar242@gmail.com">sayedathar242@gmail.com</a>',
-            about: 'AI/ML Engineer pursuing M.Tech at NMIMS. <a href="#about">Read more</a>',
-            clear: () => {
-                terminalOutput.innerHTML = '';
-                return 'Terminal cleared.';
-            }
-        };
-        
-
-        terminalInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !terminalInput.disabled) {
-                const input = terminalInput.value.trim().toLowerCase();
-                terminalInput.value = '';
-                const p = document.createElement('p');
-                p.innerHTML = `> ${input}`;
-                terminalOutput.appendChild(p);
-
-                if (input in commands) {
-                    const response = typeof commands[input] === 'function' ? commands[input]() : commands[input];
-                    const responseP = document.createElement('p');
-                    responseP.innerHTML = response;
-                    terminalOutput.appendChild(responseP);
-                } else {
-                    const errorP = document.createElement('p');
-                    errorP.textContent = `> Command "${input}" not found. Type "help" for options.`;
-                    terminalOutput.appendChild(errorP);
-                }
-                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-            }
-        });
-
-    // =============================================
-    // 10. HERO TEXT ANIMATION ON VIEW
-    // =============================================
+        initAITerminal();
     const heroSection = document.querySelector('.hero');
     const animatedWords = document.querySelectorAll('.animate-word');
 
