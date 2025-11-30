@@ -2,6 +2,7 @@
  * Mobile menu fixes, performance improvements, and cross-browser support
  */
 
+
 document.addEventListener('DOMContentLoaded', function() {
     // =============================================
     // 1. ENHANCED MOBILE MENU WITH TOUCH SUPPORT
@@ -303,7 +304,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     terminalInput.disabled = false;
                     terminalInput.focus();
                     convo.booted = true;
-                    appendLine('Type "help" for sample commands or ask anything about this profile.', 'system');
                 }
             }
 
