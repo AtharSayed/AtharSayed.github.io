@@ -486,9 +486,6 @@ nav ul li a:hover {
   margin-left: 0.5rem;
 }
 
-.close { background: #ff5f56; }
-.minimize { background: #ffbd2e; }
-.maximize { background: #27c93f; }
 
 .terminal-body {
   padding: 1rem;
